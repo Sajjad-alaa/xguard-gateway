@@ -21,7 +21,7 @@ use crate::enterprise::firewall::{FirewallError, SnatBinding, iprange::IpAddrRan
 
 const FILTER_TABLE: &str = "filter";
 const NAT_TABLE: &str = "nat";
-const DEFGUARD_TABLE: &str = "DEFGUARD-";
+const XGUARD_TABLE: &str = "XGUARD-";
 const POSTROUTING_CHAIN: &str = "POSTROUTING";
 const FORWARD_CHAIN: &str = "FORWARD";
 const ANON_SET_NAME: &CStr = c"__set%d";
@@ -182,8 +182,8 @@ impl FirewallRule for FilterRule<'_> {
         if !self.dest_ports.is_empty() && self.protocols.len() > 1 {
             return Err(FirewallError::InvalidConfiguration(format!(
                 "Cannot specify multiple protocols with destination ports, specified \
-                protocols: {:?}, destination ports: {:?}, Defguard Rule ID: {}",
-                self.protocols, self.dest_ports, self.defguard_rule_id
+                protocols: {:?}, destination ports: {:?}, XGuard Rule ID: {}",
+                self.protocols, self.dest_ports, self.xguard_rule_id
             )));
         }
 
@@ -621,11 +621,11 @@ impl FirewallRule for SnatRule<'_> {
 /// Sets up the default chains for the firewall
 pub(super) fn init_firewall(
     initial_policy: Policy,
-    defguard_fwd_chain_priority: Option<i32>,
+    xguard_fwd_chain_priority: Option<i32>,
     batch: &mut Batch,
     ifname: &str,
 ) {
-    let table = Tables::Defguard(ProtoFamily::Inet).to_table(ifname);
+    let table = Tables::XGuard(ProtoFamily::Inet).to_table(ifname);
 
     batch.add(&table, MsgType::Add);
     batch.add(&table, MsgType::Del);
@@ -634,7 +634,7 @@ pub(super) fn init_firewall(
     let mut fw_chain = Chains::Forward.to_chain(&table);
     fw_chain.set_hook(
         Hook::Forward,
-        defguard_fwd_chain_priority.unwrap_or(FORWARD_PRIORITY),
+        xguard_fwd_chain_priority.unwrap_or(FORWARD_PRIORITY),
     );
     fw_chain.set_policy(initial_policy.into());
     fw_chain.set_type(ChainType::Filter);
@@ -642,13 +642,13 @@ pub(super) fn init_firewall(
 }
 
 pub(super) fn drop_table(batch: &mut Batch, ifname: &str) {
-    let table = Tables::Defguard(ProtoFamily::Inet).to_table(ifname);
+    let table = Tables::XGuard(ProtoFamily::Inet).to_table(ifname);
     batch.add(&table, MsgType::Add);
     batch.add(&table, MsgType::Del);
 }
 
 pub(super) fn drop_chain(chain: &Chains, batch: &mut Batch, ifname: &str) {
-    let table = Tables::Defguard(ProtoFamily::Inet).to_table(ifname);
+    let table = Tables::XGuard(ProtoFamily::Inet).to_table(ifname);
     let chain = chain.to_chain(&table);
     batch.add(&chain, MsgType::Add);
     batch.add(&chain, MsgType::Del);
@@ -662,7 +662,7 @@ pub(super) fn set_nat_rules(
     snat_bindings: &[SnatBinding],
 ) -> Result<(), FirewallError> {
     // cleanup existing POSTROUTING chain rules
-    let table = Tables::Defguard(ProtoFamily::Inet).to_table(ifname);
+    let table = Tables::XGuard(ProtoFamily::Inet).to_table(ifname);
     batch.add(&table, MsgType::Add);
 
     drop_chain(&Chains::Postrouting, batch, ifname);
@@ -709,7 +709,7 @@ pub(super) fn set_nat_rules(
 //     batch: &mut Batch,
 //     ifname: &str,
 // ) -> Result<(), FirewallError> {
-//     let table = Tables::Defguard(ProtoFamily::Inet).to_table(ifname);
+//     let table = Tables::XGuard(ProtoFamily::Inet).to_table(ifname);
 //     batch.add(&table, MsgType::Add);
 
 //     let mut forward_chain = Chains::Forward.to_chain(&table);
@@ -727,7 +727,7 @@ pub(super) fn allow_established_traffic(
     batch: &mut Batch,
     ifname: &str,
 ) -> Result<(), FirewallError> {
-    let table = Tables::Defguard(ProtoFamily::Inet).to_table(ifname);
+    let table = Tables::XGuard(ProtoFamily::Inet).to_table(ifname);
     batch.add(&table, MsgType::Add);
 
     let forward_chain = Chains::Forward.to_chain(&table);
@@ -750,7 +750,7 @@ pub(super) fn ignore_unrelated_traffic(
     batch: &mut Batch,
     ifname: &str,
 ) -> Result<(), FirewallError> {
-    let table = Tables::Defguard(ProtoFamily::Inet).to_table(ifname);
+    let table = Tables::XGuard(ProtoFamily::Inet).to_table(ifname);
     batch.add(&table, MsgType::Add);
 
     let forward_chain = Chains::Forward.to_chain(&table);
@@ -774,7 +774,7 @@ pub(super) fn ignore_unrelated_traffic(
 enum Tables {
     Filter(ProtoFamily),
     Nat(ProtoFamily),
-    Defguard(ProtoFamily),
+    XGuard(ProtoFamily),
 }
 
 impl Tables {
@@ -789,9 +789,9 @@ impl Tables {
                 CString::new(NAT_TABLE).expect("Failed to create CString from NAT_TABLE constant."),
                 *family,
             ),
-            Self::Defguard(family) => Table::new(
-                CString::new(DEFGUARD_TABLE.to_owned() + ifname)
-                    .expect("Failed to create CString from DEFGUARD_TABLE constant."),
+            Self::XGuard(family) => Table::new(
+                CString::new(XGUARD_TABLE.to_owned() + ifname)
+                    .expect("Failed to create CString from XGUARD_TABLE constant."),
                 *family,
             ),
         }
@@ -825,7 +825,7 @@ pub(super) fn apply_filter_rules(
     ifname: &str,
     socket: &mnl::Socket,
 ) -> Result<(), FirewallError> {
-    let table = Tables::Defguard(ProtoFamily::Inet).to_table(ifname);
+    let table = Tables::XGuard(ProtoFamily::Inet).to_table(ifname);
     let mut batch = Batch::new();
     batch.add(&table, MsgType::Add);
 

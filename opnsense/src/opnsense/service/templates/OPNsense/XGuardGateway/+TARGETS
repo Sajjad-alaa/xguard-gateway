@@ -1,0 +1,2 @@
+config.toml:/etc/xguard/gateway.toml
+rc.conf.d:/etc/rc.conf.d/xguard_gateway

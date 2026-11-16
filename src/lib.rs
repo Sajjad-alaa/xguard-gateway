@@ -7,23 +7,23 @@ pub mod server;
 mod version;
 
 pub mod generated {
-    pub mod defguard {
+    pub mod xguard {
         pub mod common {
             pub mod v2 {
-                tonic::include_proto!("defguard.common.v2");
+                tonic::include_proto!("xguard.common.v2");
             }
         }
         pub mod gateway {
             pub mod v2 {
 
-                tonic::include_proto!("defguard.gateway.v2");
+                tonic::include_proto!("xguard.gateway.v2");
             }
         }
         pub mod enterprise {
             pub mod firewall {
                 pub mod v2 {
 
-                    tonic::include_proto!("defguard.enterprise.firewall.v2");
+                    tonic::include_proto!("xguard.enterprise.firewall.v2");
                 }
             }
         }
@@ -32,14 +32,14 @@ pub mod generated {
 
 pub mod proto {
     pub mod common {
-        pub use crate::generated::defguard::common::v2::*;
+        pub use crate::generated::xguard::common::v2::*;
     }
     pub mod gateway {
-        pub use crate::generated::defguard::gateway::v2::*;
+        pub use crate::generated::xguard::gateway::v2::*;
     }
     pub mod enterprise {
         pub mod firewall {
-            pub use crate::generated::defguard::enterprise::firewall::v2::*;
+            pub use crate::generated::xguard::enterprise::firewall::v2::*;
         }
     }
 }
@@ -50,7 +50,7 @@ extern crate log;
 use std::{process::Command, str::FromStr, time::SystemTime};
 
 use config::Config;
-use defguard_wireguard_rs::{InterfaceConfiguration, net::IpAddrMask, peer::Peer};
+use xguard_wireguard_rs::{InterfaceConfiguration, net::IpAddrMask, peer::Peer};
 use error::GatewayError;
 use prost_types::Timestamp;
 use syslog::{BasicLogger, Facility, Formatter3164};
@@ -86,7 +86,7 @@ pub fn init_syslog(config: &Config, pid: u32) -> Result<(), GatewayError> {
     let formatter = Formatter3164 {
         facility: Facility::from_str(&config.syslog_facility).unwrap_or_default(),
         hostname: None,
-        process: "defguard-gateway".into(),
+        process: "xguard-gateway".into(),
         pid,
     };
     let logger = syslog::unix_custom(formatter, &config.syslog_socket)?;

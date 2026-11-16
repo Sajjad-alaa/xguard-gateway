@@ -8,10 +8,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     tonic_prost_build::configure()
         // Skip `Debug` for types with sensitive information.
         .skip_debug([
-            "defguard.gateway.v2.Configuration",
-            "defguard.gateway.v2.CoreResponse",
-            "defguard.gateway.v2.Peer",
-            "defguard.gateway.v2.Update",
+            "xguard.gateway.v2.Configuration",
+            "xguard.gateway.v2.CoreResponse",
+            "xguard.gateway.v2.Peer",
+            "xguard.gateway.v2.Update",
         ])
         // enable optional fields
         .protoc_arg("--experimental_allow_proto3_optional")

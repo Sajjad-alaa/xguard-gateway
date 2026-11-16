@@ -254,7 +254,7 @@ impl FirewallConfig {
 
         // parse received firewall rules
         for rule in config.rules {
-            debug!("Parsing the following received Defguard ACL proto rule: {rule:?}");
+            debug!("Parsing the following received XGuard ACL proto rule: {rule:?}");
             let mut source_addrs = Vec::new();
             let mut destination_addrs = Vec::new();
             let mut destination_ports = Vec::new();

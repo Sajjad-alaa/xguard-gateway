@@ -1,6 +1,6 @@
 use std::{collections::HashMap, fmt};
 
-use defguard_version::Version;
+use xguard_version::Version;
 use tokio::sync::mpsc::Sender;
 use tracing::{Event, Subscriber};
 use tracing_subscriber::{Layer, layer::SubscriberExt, util::SubscriberInitExt};
@@ -10,7 +10,7 @@ use crate::proto::common::LogEntry;
 pub fn init_tracing(own_version: &Version, level: &str, logs_tx: Option<Sender<LogEntry>>) {
     let subscriber = tracing_subscriber::registry();
     let subscriber =
-        defguard_version::tracing::with_version_formatters(own_version, level, subscriber);
+        xguard_version::tracing::with_version_formatters(own_version, level, subscriber);
 
     if let Some(tx) = logs_tx {
         let sender_layer = LogSenderLayer::new(tx);

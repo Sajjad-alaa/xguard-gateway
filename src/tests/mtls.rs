@@ -5,7 +5,7 @@ use std::{
     time::Duration,
 };
 
-use defguard_certs::{
+use xguard_certs::{
     CertificateAuthority, Csr, PemLabel, cert_der_to_pem, der_to_pem, generate_key_pair,
 };
 use rustls::crypto::ring;

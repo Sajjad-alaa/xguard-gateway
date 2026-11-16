@@ -4,10 +4,10 @@ use std::{
 };
 
 #[cfg(not(any(target_os = "macos", target_os = "netbsd")))]
-use defguard_wireguard_rs::Kernel;
+use xguard_wireguard_rs::Kernel;
 #[cfg(any(target_os = "macos", target_os = "netbsd"))]
-use defguard_wireguard_rs::Userspace;
-use defguard_wireguard_rs::WGApi;
+use xguard_wireguard_rs::Userspace;
+use xguard_wireguard_rs::WGApi;
 use ipnetwork::IpNetwork;
 
 use super::*;

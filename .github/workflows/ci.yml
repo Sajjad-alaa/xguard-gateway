@@ -28,7 +28,7 @@ env:
 jobs:
   test:
     runs-on:
-      - codebuild-defguard-gateway-runner-${{ github.run_id }}-${{ github.run_attempt }}
+      - codebuild-xguard-gateway-runner-${{ github.run_id }}-${{ github.run_attempt }}
     container: public.ecr.aws/docker/library/rust:1
 
     steps:

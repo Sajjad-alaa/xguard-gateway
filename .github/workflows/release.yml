@@ -128,10 +128,10 @@ jobs:
                 .gitmodules "Submodule $path"
             done < <(git config -f .gitmodules --get-regexp '\.path$')
 
-            # Check that the DefGuard git dependencies in Cargo.lock use one commit per repository.
+            # Check that the XGuard git dependencies in Cargo.lock use one commit per repository.
             CRATE_PINS=$(awk -F '"' '
               $1 == "name = " { name = $2 }
-              $1 == "source = " && tolower($2) ~ /^git\+https:\/\/github\.com\/defguard\// {
+              $1 == "source = " && tolower($2) ~ /^git\+https:\/\/github\.com\/xguard\// {
                 repo = $2; sub(/^git\+https:\/\/github\.com\//, "", repo)
                 commit = repo; sub(/.*#/, "", commit)
                 sub(/[?#].*/, "", repo); sub(/\.git$/, "", repo)
@@ -146,7 +146,7 @@ jobs:
                 echo "$CRATE_PINS"
                 exit 1
               fi
-              # Check that each of these commits is merged in its DefGuard repository.
+              # Check that each of these commits is merged in its XGuard repository.
               while read -r repo sha crates; do
                 require_merged "$repo" "$sha" Cargo.toml "The rev of $crates"
               done <<< "$CRATE_PINS"
@@ -254,13 +254,13 @@ jobs:
           echo $! > "$RUNNER_TEMP/freebsd.pid"
 
       - name: Build source code archive
-        run: tar --exclude='.github' --exclude-vcs --exclude-vcs-ignores --xform='s|^\./|gateway-${{ env.VERSION }}/|' --xz -cf ${{ runner.temp }}/defguard-gateway-${{ env.VERSION }}.tar.xz .
+        run: tar --exclude='.github' --exclude-vcs --exclude-vcs-ignores --xform='s|^\./|gateway-${{ env.VERSION }}/|' --xz -cf ${{ runner.temp }}/xguard-gateway-${{ env.VERSION }}.tar.xz .
 
       - name: Upload source code archive
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: source
-          path: ${{ runner.temp }}/defguard-gateway-${{ env.VERSION }}.tar.xz
+          path: ${{ runner.temp }}/xguard-gateway-${{ env.VERSION }}.tar.xz
           if-no-files-found: error
           overwrite: true
           retention-days: 7
@@ -282,8 +282,8 @@ jobs:
         run: |
           cargo build --locked --release --target x86_64-unknown-linux-gnu --target aarch64-unknown-linux-gnu
           for target in x86_64-unknown-linux-gnu aarch64-unknown-linux-gnu; do
-            mv "target/$target/release/defguard-gateway" "defguard-gateway-${{ env.VERSION }}-$target"
-            tar -zcf "defguard-gateway-${{ env.VERSION }}-$target.tar.gz" "defguard-gateway-${{ env.VERSION }}-$target"
+            mv "target/$target/release/xguard-gateway" "xguard-gateway-${{ env.VERSION }}-$target"
+            tar -zcf "xguard-gateway-${{ env.VERSION }}-$target.tar.gz" "xguard-gateway-${{ env.VERSION }}-$target"
           done
 
       - name: Wait for FreeBSD build
@@ -297,103 +297,103 @@ jobs:
             echo "::error::The FreeBSD build failed. Its output is above."
             exit 1
           fi
-          scp "root@freebsd:$FREEBSD_DIR/target/release/defguard-gateway" defguard-gateway-${{ env.VERSION }}-x86_64-unknown-freebsd
-          tar -zcf defguard-gateway-${{ env.VERSION }}-x86_64-unknown-freebsd.tar.gz \
-            defguard-gateway-${{ env.VERSION }}-x86_64-unknown-freebsd
+          scp "root@freebsd:$FREEBSD_DIR/target/release/xguard-gateway" xguard-gateway-${{ env.VERSION }}-x86_64-unknown-freebsd
+          tar -zcf xguard-gateway-${{ env.VERSION }}-x86_64-unknown-freebsd.tar.gz \
+            xguard-gateway-${{ env.VERSION }}-x86_64-unknown-freebsd
 
       - name: Build x86_64 DEB package
-        uses: defGuard/fpm-action@ebb2575fbb892876fbdd326bb6d12524fbd7398c # main
+        uses: xGuard/fpm-action@ebb2575fbb892876fbdd326bb6d12524fbd7398c # main
         with:
           fpm_args:
-            "defguard-gateway-${{ env.VERSION }}-x86_64-unknown-linux-gnu=/usr/bin/defguard-gateway
-            linux/defguard-gateway.service=/usr/lib/systemd/system/defguard-gateway.service
-            example-config.toml=/etc/defguard/gateway.toml"
+            "xguard-gateway-${{ env.VERSION }}-x86_64-unknown-linux-gnu=/usr/bin/xguard-gateway
+            linux/xguard-gateway.service=/usr/lib/systemd/system/xguard-gateway.service
+            example-config.toml=/etc/xguard/gateway.toml"
           fpm_opts: "--architecture amd64
             --output-type deb
             --version ${{ env.VERSION }}
-            --package defguard-gateway-${{ env.VERSION }}-x86_64-unknown-linux-gnu.deb
+            --package xguard-gateway-${{ env.VERSION }}-x86_64-unknown-linux-gnu.deb
             --before-install linux/preinst
             --after-install linux/postinst
             --before-remove linux/prerm
             --after-remove linux/postrm"
 
       - name: Build aarch64 DEB package
-        uses: defGuard/fpm-action@ebb2575fbb892876fbdd326bb6d12524fbd7398c # main
+        uses: xGuard/fpm-action@ebb2575fbb892876fbdd326bb6d12524fbd7398c # main
         with:
           fpm_args:
-            "defguard-gateway-${{ env.VERSION }}-aarch64-unknown-linux-gnu=/usr/bin/defguard-gateway
-            linux/defguard-gateway.service=/usr/lib/systemd/system/defguard-gateway.service
-            example-config.toml=/etc/defguard/gateway.toml"
+            "xguard-gateway-${{ env.VERSION }}-aarch64-unknown-linux-gnu=/usr/bin/xguard-gateway
+            linux/xguard-gateway.service=/usr/lib/systemd/system/xguard-gateway.service
+            example-config.toml=/etc/xguard/gateway.toml"
           fpm_opts: "--architecture arm64
             --output-type deb
             --version ${{ env.VERSION }}
-            --package defguard-gateway-${{ env.VERSION }}-aarch64-unknown-linux-gnu.deb
+            --package xguard-gateway-${{ env.VERSION }}-aarch64-unknown-linux-gnu.deb
             --before-install linux/preinst
             --after-install linux/postinst
             --before-remove linux/prerm
             --after-remove linux/postrm"
 
       - name: Build x86_64 RPM package
-        uses: defGuard/fpm-action@ebb2575fbb892876fbdd326bb6d12524fbd7398c # main
+        uses: xGuard/fpm-action@ebb2575fbb892876fbdd326bb6d12524fbd7398c # main
         with:
           fpm_args:
-            "defguard-gateway-${{ env.VERSION }}-x86_64-unknown-linux-gnu=/usr/bin/defguard-gateway
-            linux/defguard-gateway.service=/usr/lib/systemd/system/defguard-gateway.service
-            example-config.toml=/etc/defguard/gateway.toml"
+            "xguard-gateway-${{ env.VERSION }}-x86_64-unknown-linux-gnu=/usr/bin/xguard-gateway
+            linux/xguard-gateway.service=/usr/lib/systemd/system/xguard-gateway.service
+            example-config.toml=/etc/xguard/gateway.toml"
           fpm_opts: "--architecture amd64
             --output-type rpm
             --version ${{ env.VERSION }}
-            --package defguard-gateway-${{ env.VERSION }}-x86_64-unknown-linux-gnu.rpm
+            --package xguard-gateway-${{ env.VERSION }}-x86_64-unknown-linux-gnu.rpm
             --before-install linux/preinst
             --after-install linux/postinst
             --before-remove linux/prerm
             --after-remove linux/postrm"
 
       - name: Build aarch64 RPM package
-        uses: defGuard/fpm-action@ebb2575fbb892876fbdd326bb6d12524fbd7398c # main
+        uses: xGuard/fpm-action@ebb2575fbb892876fbdd326bb6d12524fbd7398c # main
         with:
           fpm_args:
-            "defguard-gateway-${{ env.VERSION }}-aarch64-unknown-linux-gnu=/usr/bin/defguard-gateway
-            linux/defguard-gateway.service=/usr/lib/systemd/system/defguard-gateway.service
-            example-config.toml=/etc/defguard/gateway.toml"
+            "xguard-gateway-${{ env.VERSION }}-aarch64-unknown-linux-gnu=/usr/bin/xguard-gateway
+            linux/xguard-gateway.service=/usr/lib/systemd/system/xguard-gateway.service
+            example-config.toml=/etc/xguard/gateway.toml"
           fpm_opts: "--architecture arm64
             --output-type rpm
             --version ${{ env.VERSION }}
-            --package defguard-gateway-${{ env.VERSION }}-aarch64-unknown-linux-gnu.rpm
+            --package xguard-gateway-${{ env.VERSION }}-aarch64-unknown-linux-gnu.rpm
             --before-install linux/preinst
             --after-install linux/postinst
             --before-remove linux/prerm
             --after-remove linux/postrm"
 
       - name: Build FreeBSD package
-        uses: defGuard/fpm-action@ebb2575fbb892876fbdd326bb6d12524fbd7398c # main
+        uses: xGuard/fpm-action@ebb2575fbb892876fbdd326bb6d12524fbd7398c # main
         with:
           fpm_args:
-            "defguard-gateway-${{ env.VERSION }}-x86_64-unknown-freebsd=/usr/local/bin/defguard-gateway
-            freebsd/defguard_gateway=/usr/local/etc/rc.d/defguard_gateway
-            example-config.toml=/etc/defguard/gateway.toml.sample"
+            "xguard-gateway-${{ env.VERSION }}-x86_64-unknown-freebsd=/usr/local/bin/xguard-gateway
+            freebsd/xguard_gateway=/usr/local/etc/rc.d/xguard_gateway
+            example-config.toml=/etc/xguard/gateway.toml.sample"
           fpm_opts: "--architecture amd64
             --output-type freebsd
             --version ${{ env.VERSION }}
-            --package defguard-gateway-${{ env.VERSION }}_x86_64-unknown-freebsd.pkg
+            --package xguard-gateway-${{ env.VERSION }}_x86_64-unknown-freebsd.pkg
             --freebsd-osversion '*'
             --depends openssl
             --after-install freebsd/post-install.sh"
 
       - name: Build OPNsense package
-        uses: defGuard/fpm-action@ebb2575fbb892876fbdd326bb6d12524fbd7398c # main
+        uses: xGuard/fpm-action@ebb2575fbb892876fbdd326bb6d12524fbd7398c # main
         with:
           fpm_args:
-            "defguard-gateway-${{ env.VERSION }}-x86_64-unknown-freebsd=/usr/local/bin/defguard-gateway
-            freebsd/defguard_gateway=/usr/local/etc/rc.d/defguard_gateway
-            example-config.toml=/etc/defguard/gateway.toml.sample
-            freebsd/defguard-rc.conf=/etc/rc.conf.d/defguard_gateway
+            "xguard-gateway-${{ env.VERSION }}-x86_64-unknown-freebsd=/usr/local/bin/xguard-gateway
+            freebsd/xguard_gateway=/usr/local/etc/rc.d/xguard_gateway
+            example-config.toml=/etc/xguard/gateway.toml.sample
+            freebsd/xguard-rc.conf=/etc/rc.conf.d/xguard_gateway
             opnsense/src/etc/=/usr/local/etc/
             opnsense/src/opnsense/=/usr/local/opnsense/"
           fpm_opts: "--architecture amd64
             --output-type freebsd
             --version ${{ env.VERSION }}
-            --package defguard-gateway-${{ env.VERSION }}_x86_64-unknown-opnsense.pkg
+            --package xguard-gateway-${{ env.VERSION }}_x86_64-unknown-opnsense.pkg
             --freebsd-osversion '*'
             --depends openssl
             --after-install freebsd/post-install.sh"
@@ -403,10 +403,10 @@ jobs:
         with:
           name: binaries
           path: |
-            defguard-gateway-${{ env.VERSION }}-*.tar.gz
-            defguard-gateway-${{ env.VERSION }}-*.deb
-            defguard-gateway-${{ env.VERSION }}-*.rpm
-            defguard-gateway-${{ env.VERSION }}_x86_64-unknown-*.pkg
+            xguard-gateway-${{ env.VERSION }}-*.tar.gz
+            xguard-gateway-${{ env.VERSION }}-*.deb
+            xguard-gateway-${{ env.VERSION }}-*.rpm
+            xguard-gateway-${{ env.VERSION }}_x86_64-unknown-*.pkg
           if-no-files-found: error
           overwrite: true
           retention-days: 7
@@ -476,20 +476,20 @@ jobs:
             --output-type deb \
             --version "${{ env.VERSION }}" \
             --architecture ${{ matrix.deb_arch }} \
-            --package defguard-gateway-${{ env.VERSION }}-${{ matrix.deb_arch }}_ubuntu-22-04-lts.deb \
+            --package xguard-gateway-${{ env.VERSION }}-${{ matrix.deb_arch }}_ubuntu-22-04-lts.deb \
             --before-install linux/preinst \
             --after-install linux/postinst \
             --before-remove linux/prerm \
             --after-remove linux/postrm \
-            "target/${{ matrix.rust_target }}/release/defguard-gateway=/usr/bin/defguard-gateway" \
-            "linux/defguard-gateway.service=/usr/lib/systemd/system/defguard-gateway.service" \
-            "example-config.toml=/etc/defguard/gateway.toml"
+            "target/${{ matrix.rust_target }}/release/xguard-gateway=/usr/bin/xguard-gateway" \
+            "linux/xguard-gateway.service=/usr/lib/systemd/system/xguard-gateway.service" \
+            "example-config.toml=/etc/xguard/gateway.toml"
 
       - name: Upload ubuntu-22-04-lts DEB
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: ubuntu-22-04-${{ matrix.deb_arch }}
-          path: defguard-gateway-${{ env.VERSION }}-${{ matrix.deb_arch }}_ubuntu-22-04-lts.deb
+          path: xguard-gateway-${{ env.VERSION }}-${{ matrix.deb_arch }}_ubuntu-22-04-lts.deb
           if-no-files-found: error
           overwrite: true
           retention-days: 7
@@ -509,7 +509,7 @@ jobs:
       issues: write
     env:
       VERSION: ${{ needs.precheck.outputs.version }}
-      GHCR_REPO: ghcr.io/defguard/gateway
+      GHCR_REPO: ghcr.io/sajjad-alaa/xguard-gateway
       GH_REPO: ${{ github.repository }}
       GH_TOKEN: ${{ github.token }}
     steps:
@@ -531,29 +531,29 @@ jobs:
             exit 1
           fi
           # Later runs of the same commit move its sha tag, so the draft names this build by digest.
-          echo "$GHCR_REPO@$DIGEST" > "dist/defguard-gateway-$VERSION-docker-image.txt"
+          echo "$GHCR_REPO@$DIGEST" > "dist/xguard-gateway-$VERSION-docker-image.txt"
 
       - name: Compare build output with the expected release assets
         run: |
           set -euo pipefail
           expected=(
-            "defguard-gateway-$VERSION.tar.xz"
-            "defguard-gateway-$VERSION-x86_64-unknown-linux-gnu.tar.gz"
-            "defguard-gateway-$VERSION-aarch64-unknown-linux-gnu.tar.gz"
-            "defguard-gateway-$VERSION-x86_64-unknown-freebsd.tar.gz"
-            "defguard-gateway-$VERSION-x86_64-unknown-linux-gnu.deb"
-            "defguard-gateway-$VERSION-aarch64-unknown-linux-gnu.deb"
-            "defguard-gateway-$VERSION-x86_64-unknown-linux-gnu.rpm"
-            "defguard-gateway-$VERSION-aarch64-unknown-linux-gnu.rpm"
-            "defguard-gateway-${VERSION}_x86_64-unknown-freebsd.pkg"
-            "defguard-gateway-${VERSION}_x86_64-unknown-opnsense.pkg"
-            "defguard-gateway-$VERSION-amd64_ubuntu-22-04-lts.deb"
-            "defguard-gateway-$VERSION-arm64_ubuntu-22-04-lts.deb"
-            "defguard-gateway-$VERSION.sbom.json"
-            "defguard-gateway-$VERSION-docker.sbom.json"
-            "defguard-gateway-$VERSION.advisories.json"
-            "defguard-gateway-$VERSION-docker.advisories.json"
-            "defguard-gateway-$VERSION-docker-image.txt"
+            "xguard-gateway-$VERSION.tar.xz"
+            "xguard-gateway-$VERSION-x86_64-unknown-linux-gnu.tar.gz"
+            "xguard-gateway-$VERSION-aarch64-unknown-linux-gnu.tar.gz"
+            "xguard-gateway-$VERSION-x86_64-unknown-freebsd.tar.gz"
+            "xguard-gateway-$VERSION-x86_64-unknown-linux-gnu.deb"
+            "xguard-gateway-$VERSION-aarch64-unknown-linux-gnu.deb"
+            "xguard-gateway-$VERSION-x86_64-unknown-linux-gnu.rpm"
+            "xguard-gateway-$VERSION-aarch64-unknown-linux-gnu.rpm"
+            "xguard-gateway-${VERSION}_x86_64-unknown-freebsd.pkg"
+            "xguard-gateway-${VERSION}_x86_64-unknown-opnsense.pkg"
+            "xguard-gateway-$VERSION-amd64_ubuntu-22-04-lts.deb"
+            "xguard-gateway-$VERSION-arm64_ubuntu-22-04-lts.deb"
+            "xguard-gateway-$VERSION.sbom.json"
+            "xguard-gateway-$VERSION-docker.sbom.json"
+            "xguard-gateway-$VERSION.advisories.json"
+            "xguard-gateway-$VERSION-docker.advisories.json"
+            "xguard-gateway-$VERSION-docker-image.txt"
           )
           if ! diff <(printf '%s\n' "${expected[@]}" | sort) <(ls dist | sort); then
             echo "::error::The build output does not match the expected release assets"

@@ -13,5 +13,5 @@ RUN apt-get update && apt-get upgrade -y && \
       iptables ebtables nftables lsb-release libudev1 && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
-COPY --from=builder /app/target/release/defguard-gateway /usr/local/bin
-ENTRYPOINT ["/usr/local/bin/defguard-gateway"]
+COPY --from=builder /app/target/release/xguard-gateway /usr/local/bin
+ENTRYPOINT ["/usr/local/bin/xguard-gateway"]

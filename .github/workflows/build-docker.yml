@@ -17,12 +17,12 @@ on:
         value: ${{ jobs.docker-manifest.outputs.digest }}
 
 env:
-  GHCR_REPO: ghcr.io/defguard/gateway
+  GHCR_REPO: ghcr.io/sajjad-alaa/xguard-gateway
 
 jobs:
   build-docker:
     runs-on:
-      - codebuild-defguard-gateway-runner-${{ github.run_id }}-${{ github.run_attempt }}
+      - codebuild-xguard-gateway-runner-${{ github.run_id }}-${{ github.run_attempt }}
         image:${{ matrix.os }}
         instance-size:${{ matrix.size }}
     strategy:
@@ -148,4 +148,4 @@ jobs:
       - name: Verify image signatures
         run: |
           images='${{ env.GHCR_REPO }}:${{ github.sha }} ${{ steps.meta.outputs.tags }}'
-          cosign verify ${images} --certificate-oidc-issuer https://token.actions.githubusercontent.com --certificate-identity-regexp="https://github.com/DefGuard/gateway" -o text
+          cosign verify ${images} --certificate-oidc-issuer https://token.actions.githubusercontent.com --certificate-identity-regexp="https://github.com/Sajjad-alaa/xguard-gateway" -o text

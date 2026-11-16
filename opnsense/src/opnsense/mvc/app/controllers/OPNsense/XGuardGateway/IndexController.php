@@ -1,10 +1,10 @@
 <?php
-namespace OPNsense\DefguardGateway;
+namespace OPNsense\XGuardGateway;
 class IndexController extends \OPNsense\Base\IndexController
 {
     public function indexAction()
     {
-        $this->view->pick("OPNsense/DefguardGateway/index");
+        $this->view->pick("OPNsense/XGuardGateway/index");
         $this->view->generalForm = $this->getForm("general");
     }
 }

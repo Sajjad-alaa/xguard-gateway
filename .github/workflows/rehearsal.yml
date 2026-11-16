@@ -2,7 +2,7 @@ name: Release rehearsal
 
 on:
   schedule:
-    # The defguard rehearsal uses the same self-hosted runners at 01:00, so this one starts an hour later.
+    # The xguard rehearsal uses the same self-hosted runners at 01:00, so this one starts an hour later.
     - cron: "0 2 * * *"
   workflow_dispatch:
 

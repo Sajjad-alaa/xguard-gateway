@@ -2,23 +2,23 @@
 
 <script type="text/javascript">
 $( document ).ready(function() {
-    mapDataToFormUI({"frm_GeneralSettings": "/api/defguardgateway/settings/get"}).done(function(data) {
-    	updateServiceControlUI("defguardgateway");
+    mapDataToFormUI({"frm_GeneralSettings": "/api/xguardgateway/settings/get"}).done(function(data) {
+    	updateServiceControlUI("xguardgateway");
     });
 
     $("#saveAct").click(function(){
         $("#responseMsg").removeClass("hidden");
-        saveFormToEndpoint(url="/api/defguardgateway/settings/set", formid='frm_GeneralSettings', callback_ok=function() {
-            updateServiceControlUI("defguardgateway");
-    		ajaxCall(url="/api/defguardgateway/service/reconfigure", sendData={}, callback=function(data, status) {
+        saveFormToEndpoint(url="/api/xguardgateway/settings/set", formid='frm_GeneralSettings', callback_ok=function() {
+            updateServiceControlUI("xguardgateway");
+    		ajaxCall(url="/api/xguardgateway/service/reconfigure", sendData={}, callback=function(data, status) {
     			$("#responseMsg").html(data["status"]);
                 if (status !== "success" || data["status"] !== "ok") {
                     return;
                 }
 
-                ajaxCall(url="/api/defguardgateway/service/restart", sendData={}, callback=function(data, status) {
+                ajaxCall(url="/api/xguardgateway/service/restart", sendData={}, callback=function(data, status) {
                     $("#responseMsg").html(data['status']);
-                    updateServiceControlUI("defguardgateway");
+                    updateServiceControlUI("xguardgateway");
                 });
             });
         });
@@ -27,14 +27,14 @@ $( document ).ready(function() {
     $("#startAct").click(function () {
         stdDialogConfirm(
             '{{ lang._("Confirm gateway (re)start") }}',
-            '{{ lang._("Do you want to (re)start Defguard Gateway?") }}',
+            '{{ lang._("Do you want to (re)start XGuard Gateway?") }}',
             '{{ lang._("Yes") }}', '{{ lang._("Cancel") }}', function () {
                 $("#startAct").addClass("fa fa-spinner");
 				$("#responseMsg").removeClass("hidden");
-                ajaxCall(url="/api/defguardgateway/service/restart", sendData={}, callback=function(data, status) {
+                ajaxCall(url="/api/xguardgateway/service/restart", sendData={}, callback=function(data, status) {
                     $("#startAct").removeClass("fa fa-spinner fa-pulse");
     				$("#responseMsg").html(data['status']);
-    				updateServiceControlUI("defguardgateway");
+    				updateServiceControlUI("xguardgateway");
             });
         });
     });
@@ -42,14 +42,14 @@ $( document ).ready(function() {
     $("#stopAct").click(function () {
         stdDialogConfirm(
             '{{ lang._("Confirm gateway stop") }}',
-            '{{ lang._("Do you want to stop Defguard Gateway?") }}',
+            '{{ lang._("Do you want to stop XGuard Gateway?") }}',
             '{{ lang._("Yes") }}', '{{ lang._("Cancel") }}', function () {
                 $("#stopAct").addClass("fa fa-spinner");
                 $("#responseMsg").removeClass("hidden");
-                ajaxCall(url="/api/defguardgateway/service/stop", sendData={}, callback=function(data, status) {
+                ajaxCall(url="/api/xguardgateway/service/stop", sendData={}, callback=function(data, status) {
                     $("#stopAct").removeClass("fa fa-spinner fa-pulse");
                     $("#responseMsg").html(data['status']);
-                    updateServiceControlUI("defguardgateway");
+                    updateServiceControlUI("xguardgateway");
                 });
         });
     });

@@ -12,7 +12,7 @@ use tokio::signal;
 #[cfg(unix)]
 use tokio::signal::unix::{SignalKind, signal as unix_signal};
 
-use defguard_gateway::{
+use xguard_gateway::{
     CORE_CLIENT_CERT_NAME, GRPC_CA_CERT_NAME, GRPC_CERT_NAME, GRPC_KEY_NAME, VERSION,
     config::get_config,
     error::GatewayError,
@@ -22,10 +22,10 @@ use defguard_gateway::{
     logging::init_tracing,
     server::run_http_server,
 };
-use defguard_version::Version;
+use xguard_version::Version;
 #[cfg(not(any(target_os = "macos", target_os = "netbsd")))]
-use defguard_wireguard_rs::Kernel;
-use defguard_wireguard_rs::{Userspace, WGApi};
+use xguard_wireguard_rs::Kernel;
+use xguard_wireguard_rs::{Userspace, WGApi};
 use tokio::{
     sync::{mpsc, watch},
     task::JoinSet,
@@ -58,7 +58,7 @@ fn load_tls_config(cert_dir: &Path) -> Result<Option<TlsConfig>, GatewayError> {
 
     match (grpc_cert, grpc_key, grpc_ca_cert, core_client_cert_pem) {
         (Some(cert), Some(key), Some(ca_cert), Some(client_cert_pem)) => {
-            let core_client_cert_der = defguard_certs::parse_pem_certificate(&client_cert_pem)
+            let core_client_cert_der = xguard_certs::parse_pem_certificate(&client_cert_pem)
                 .map_err(|e| {
                     GatewayError::SetupError(format!("Failed to parse Core client cert: {e}"))
                 })?
@@ -79,7 +79,7 @@ async fn main() -> Result<(), GatewayError> {
     // Install the ring CryptoProvider as the process-wide default for rustls.
     // Both ring and aws-lc-rs may be pulled in transitively; without an explicit
     // selection rustls panics at runtime when it cannot determine which to use.
-    defguard_gateway::init_crypto_provider();
+    xguard_gateway::init_crypto_provider();
 
     // parse config and install signal handlers before starting setup or server tasks.
     let config = get_config()?;

@@ -6,10 +6,10 @@ use std::{
     },
 };
 
-use defguard_certs::{CertificateError, CertificateInfo};
-use defguard_grpc_tls::{certs::server_tls_config, server::certificate_serial_interceptor};
-use defguard_version::{
-    ComponentInfo, DefguardComponent, Version, get_tracing_variables, server::DefguardVersionLayer,
+use xguard_certs::{CertificateError, CertificateInfo};
+use xguard_grpc_tls::{certs::server_tls_config, server::certificate_serial_interceptor};
+use xguard_version::{
+    ComponentInfo, XGuardComponent, Version, get_tracing_variables, server::XGuardVersionLayer,
 };
 use tokio::{
     fs::remove_file,
@@ -57,11 +57,11 @@ impl GatewayServer {
     /// Starts the gateway process.
     /// * Requires a valid mTLS configuration to be set (via `set_tls_config`) before starting;
     ///   returns an error if TLS configuration is absent - the gRPC server never starts in plain-text mode
-    /// * Retrieves configuration and configuration updates from Defguard core via a mTLS-secured gRPC server
+    /// * Retrieves configuration and configuration updates from XGuard core via a mTLS-secured gRPC server
     /// * Manages the WireGuard interface according to configuration and updates
-    /// * Sends interface statistics to Defguard core periodically
+    /// * Sends interface statistics to XGuard core periodically
     pub(crate) async fn start(self, config: Config) -> Result<(), GatewayError> {
-        info!("Starting Defguard Gateway version {VERSION} with configuration: {config:?}");
+        info!("Starting XGuard Gateway version {VERSION} with configuration: {config:?}");
 
         if let Some(post_up) = &config.post_up {
             debug!("Executing specified POST_UP command: {post_up}");
@@ -107,7 +107,7 @@ impl GatewayServer {
                     .layer(InterceptorLayer::new(certificate_serial_interceptor(
                         expected_serial,
                     )))
-                    .layer(DefguardVersionLayer::new(Version::parse(VERSION)?))
+                    .layer(XGuardVersionLayer::new(Version::parse(VERSION)?))
                     .service(gateway_server::GatewayServer::new(self)),
             )
             .serve(addr)
@@ -127,18 +127,18 @@ impl GatewayServer {
 impl gateway_server::Gateway for GatewayServer {
     type BidiStream = UnboundedReceiverStream<Result<CoreRequest, Status>>;
 
-    /// Handle bidirectional communication with Defguard Core.
+    /// Handle bidirectional communication with XGuard Core.
     async fn bidi(
         &self,
         request: Request<Streaming<CoreResponse>>,
     ) -> Result<Response<Self::BidiStream>, Status> {
         let Some(address) = request.remote_addr() else {
-            error!("Failed to determine Defguard Core's address for request: {request:?}");
+            error!("Failed to determine XGuard Core's address for request: {request:?}");
             return Err(Status::internal(
-                "Failed to determine Defguard Core's address",
+                "Failed to determine XGuard Core's address",
             ));
         };
-        info!("Defguard Core gRPC client connected from {address}");
+        info!("XGuard Core gRPC client connected from {address}");
 
         let core_info = ComponentInfo::from_metadata(request.metadata());
         let (version, info) = get_tracing_variables(&core_info);
@@ -146,16 +146,16 @@ impl gateway_server::Gateway for GatewayServer {
         // Tracing span.
         let span = tracing::info_span!(
             "core_communication",
-            component = %DefguardComponent::Core,
+            component = %XGuardComponent::Core,
             version = version.to_string(),
             info
         );
         let _guard = span.enter();
 
-        // Check Defguard Core's version and exit if it's not supported.
+        // Check XGuard Core's version and exit if it's not supported.
         let version = core_info.as_ref().map(|info| &info.version);
         if !is_core_version_supported(version) {
-            return Err(Status::internal("Unsupported Defguard Core version"));
+            return Err(Status::internal("Unsupported XGuard Core version"));
         }
 
         // Drop new connections if another Core has already been connected.
@@ -194,7 +194,7 @@ impl gateway_server::Gateway for GatewayServer {
             loop {
                 match stream.message().await {
                     Ok(Some(response)) => {
-                        debug!("Received message from Defguard Core: {response:?}");
+                        debug!("Received message from XGuard Core: {response:?}");
                         // Discard empty payloads.
                         if let Some(payload) = response.payload {
                             match payload {
@@ -220,16 +220,16 @@ impl gateway_server::Gateway for GatewayServer {
                         }
                     }
                     Ok(None) => {
-                        info!("gRPC stream from Defguard Core has been closed");
+                        info!("gRPC stream from XGuard Core has been closed");
                         break;
                     }
                     Err(err) => {
-                        error!("gRPC stream from Defguard Core failed with error: {err}");
+                        error!("gRPC stream from XGuard Core failed with error: {err}");
                         break;
                     }
                 }
             }
-            info!("Defguard Core gRPC stream has been disconnected: {address}");
+            info!("XGuard Core gRPC stream has been disconnected: {address}");
             // Mark disconnected immediately, but delay tearing down the interface by
             // the grace period so a transient Core outage (e.g. a container restart)
             // doesn't drop VPN traffic. If Core reconnects within the window the purge

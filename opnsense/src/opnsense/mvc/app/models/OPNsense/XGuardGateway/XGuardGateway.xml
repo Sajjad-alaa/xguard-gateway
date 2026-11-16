@@ -1,6 +1,6 @@
 <model>
-  <mount>//OPNsense/defguardgateway</mount>
-  <description>Defguard Gateway plugin for OPNsense</description>
+  <mount>//OPNsense/xguardgateway</mount>
+  <description>XGuard Gateway plugin for OPNsense</description>
   <items>
     <general>
       <Enabled type="BooleanField">
@@ -30,7 +30,7 @@
         <Required>Y</Required>
       </UseSyslog>
       <PidFile type="TextField">
-        <default>/var/run/defguard_gateway.pid</default>
+        <default>/var/run/xguard_gateway.pid</default>
         <Required>N</Required>
       </PidFile>
       <SyslogSocket type="TextField">
@@ -87,7 +87,7 @@
         <ValidationMessage>please specify a valid IP address</ValidationMessage>
       </HttpBindAddress>
       <CertDir type="TextField">
-        <default>/etc/defguard/certs</default>
+        <default>/etc/xguard/certs</default>
         <Required>Y</Required>
       </CertDir>
       <FwAnchorPlacement type="OptionField">

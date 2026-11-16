@@ -1,5 +1,5 @@
-use defguard_version::{DefguardVersionError, SemverError};
-use defguard_wireguard_rs::error::WireguardInterfaceError;
+use xguard_version::{XGuardVersionError, SemverError};
+use xguard_wireguard_rs::error::WireguardInterfaceError;
 use thiserror::Error;
 
 use crate::enterprise::firewall::FirewallError;
@@ -31,7 +31,7 @@ pub enum GatewayError {
     FirewallError(#[from] FirewallError),
 
     #[error(transparent)]
-    DefguardVersionError(#[from] DefguardVersionError),
+    XGuardVersionError(#[from] XGuardVersionError),
 
     #[error(transparent)]
     SemverError(#[from] SemverError),

@@ -46,10 +46,10 @@ struct FilterRule<'a> {
     action: Policy,
     states: Vec<State>,
     counter: bool,
-    // The ID of the associated Defguard rule.
-    // The filter rules may not always be a 1:1 representation of the Defguard rules, so
+    // The ID of the associated XGuard rule.
+    // The filter rules may not always be a 1:1 representation of the XGuard rules, so
     // this value helps to keep track of them.
-    defguard_rule_id: i64,
+    xguard_rule_id: i64,
     v4: bool,
     comment: Option<String>,
     negated_oifname: bool,
@@ -135,7 +135,7 @@ fn next_ip(ip: IpAddr) -> IpAddr {
 
 impl FirewallApi {
     fn add_rule(&mut self, rule: &FirewallRule) -> Result<(), FirewallError> {
-        debug!("Applying the following Defguard ACL rule: {rule:?}");
+        debug!("Applying the following XGuard ACL rule: {rule:?}");
 
         let mut filter_rules = Vec::new();
         debug!(
@@ -157,7 +157,7 @@ impl FirewallApi {
                 protocols: rule.protocols.clone(),
                 action: rule.verdict,
                 counter: true,
-                defguard_rule_id: rule.id,
+                xguard_rule_id: rule.id,
                 v4: rule.ipv4,
                 comment: rule.comment.clone(),
                 ..Default::default()
@@ -176,7 +176,7 @@ impl FirewallApi {
                     protocols: vec![protocol],
                     action: rule.verdict,
                     counter: true,
-                    defguard_rule_id: rule.id,
+                    xguard_rule_id: rule.id,
                     v4: rule.ipv4,
                     comment: rule.comment.clone(),
                     ..Default::default()
@@ -206,7 +206,7 @@ impl FirewallApi {
                     protocols: vec![protocol],
                     action: rule.verdict,
                     counter: true,
-                    defguard_rule_id: rule.id,
+                    xguard_rule_id: rule.id,
                     v4: rule.ipv4,
                     comment: rule.comment.clone(),
                     ..Default::default()
@@ -218,7 +218,7 @@ impl FirewallApi {
         apply_filter_rules(&filter_rules, &self.ifname, &self.socket)?;
 
         debug!(
-            "Applied firewall rules for Defguard ACL rule ID: {}",
+            "Applied firewall rules for XGuard ACL rule ID: {}",
             rule.id
         );
         Ok(())
@@ -246,7 +246,7 @@ impl FirewallManagementApi for FirewallApi {
         Ok(())
     }
 
-    /// Cleans up the whole Defguard table.
+    /// Cleans up the whole XGuard table.
     fn cleanup(&mut self) -> Result<(), FirewallError> {
         debug!("Cleaning up all previous firewall rules, if any");
         let mut batch = Batch::new();
@@ -276,11 +276,11 @@ impl FirewallManagementApi for FirewallApi {
     }
 
     fn add_rules(&mut self, rules: &[FirewallRule]) -> Result<(), FirewallError> {
-        debug!("Applying the following Defguard ACL rules: {rules:?}");
+        debug!("Applying the following XGuard ACL rules: {rules:?}");
         for rule in rules {
             self.add_rule(rule)?;
         }
-        debug!("Applied all Defguard ACL rules");
+        debug!("Applied all XGuard ACL rules");
         Ok(())
     }
 }

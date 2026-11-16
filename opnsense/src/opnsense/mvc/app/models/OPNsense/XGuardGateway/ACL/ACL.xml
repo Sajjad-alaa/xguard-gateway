@@ -1,0 +1,9 @@
+<acl>
+   <page-services-xguardgateway>
+      <name>Services: XGuard Gateway</name>
+      <patterns>
+         <pattern>ui/xguardgateway/*</pattern>
+         <pattern>api/xguardgateway/*</pattern>
+      </patterns>
+   </page-services-xguardgateway>
+</acl>

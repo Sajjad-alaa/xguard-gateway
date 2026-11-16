@@ -1,0 +1,62 @@
+# Log level used when syslog is disabled
+log_level = "{{ OPNsense.xguardgateway.general.LogLevel|default("info") }}"
+# Optional: gateway name which will be displayed in xguard web UI
+{% if not helpers.empty('OPNsense.xguardgateway.general.Name') %}
+name = "{{ OPNsense.xguardgateway.general.Name }}"
+{% endif %}
+# Gateway gRPC server port
+grpc_port = {{ OPNsense.xguardgateway.general.GrpcPort|default(50066) }}
+# Use userspace WireGuard implementation (e.g. wireguard-go)
+{% if OPNsense.xguardgateway.general.Userspace == "1" %}
+userspace = true
+{% else %}
+userspace = false
+{% endif %}
+# How often interface statistics are sent to XGuard Core (in seconds)
+stats_period = {{ OPNsense.xguardgateway.general.StatsPeriod|default(30) }}
+# Name of WireGuard interface
+ifname = "{{ OPNsense.xguardgateway.general.IfName|default("wg0") }}"
+# Optional: write PID to this file
+pidfile = "{{ OPNsense.xguardgateway.general.PidFile|default("/var/run/xguard_gateway.pid") }}"
+# Enable logging to syslog
+{% if OPNsense.xguardgateway.general.UseSyslog == "1" %}
+use_syslog = true
+{% else %}
+use_syslog = false
+{% endif %}
+# Syslog facility
+syslog_facility = "{{ OPNsense.xguardgateway.general.SyslogFacility|default("LOG_USER") }}"
+# Syslog socket path
+syslog_socket = "{{ OPNsense.xguardgateway.general.SyslogSocket|default("/var/run/log") }}"
+{% if not helpers.empty('OPNsense.xguardgateway.general.PreUp') %}
+pre_up = "{{ OPNsense.xguardgateway.general.PreUp }}"
+{% endif %}
+{% if not helpers.empty('OPNsense.xguardgateway.general.PreDown') %}
+pre_down = "{{ OPNsense.xguardgateway.general.PreDown }}"
+{% endif %}
+{% if not helpers.empty('OPNsense.xguardgateway.general.PostUp') %}
+post_up = "{{ OPNsense.xguardgateway.general.PostUp }}"
+{% endif %}
+{% if not helpers.empty('OPNsense.xguardgateway.general.PostDown') %}
+post_down = "{{ OPNsense.xguardgateway.general.PostDown }}"
+{% endif %}
+{% if not helpers.empty('OPNsense.xguardgateway.general.HealthPort') %}
+health_port = {{ OPNsense.xguardgateway.general.HealthPort }}
+{% endif %}
+{% if OPNsense.xguardgateway.general.Masquerade == "1" %}
+masquerade = true
+{% else %}
+masquerade = false
+{% endif %}
+{% if not helpers.empty('OPNsense.xguardgateway.general.FwPriority') %}
+fw_priority = {{ OPNsense.xguardgateway.general.FwPriority }}
+{% endif %}
+{% if OPNsense.xguardgateway.general.DisableFirewallManagement == "1" %}
+disable_firewall_management = true
+{% else %}
+disable_firewall_management = false
+{% endif %}
+{% if not helpers.empty('OPNsense.xguardgateway.general.HttpBindAddress') %}
+http_bind_address = "{{ OPNsense.xguardgateway.general.HttpBindAddress }}"
+{% endif %}
+cert_dir = "{{ OPNsense.xguardgateway.general.CertDir|default("/etc/xguard/certs") }}"

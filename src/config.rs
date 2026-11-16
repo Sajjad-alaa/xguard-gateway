@@ -56,33 +56,33 @@ fn default_syslog_socket() -> PathBuf {
 }
 
 fn default_cert_dir() -> PathBuf {
-    PathBuf::from("/etc/defguard/certs")
+    PathBuf::from("/etc/xguard/certs")
 }
 
 #[derive(Debug, Parser, Clone, Deserialize)]
-#[clap(about = "Defguard VPN gateway service")]
+#[clap(about = "XGuard VPN gateway service")]
 #[command(version = VERSION)]
 pub struct Config {
-    #[arg(long, short = 'l', env = "DEFGUARD_LOG_LEVEL", default_value = "info")]
+    #[arg(long, short = 'l', env = "XGUARD_LOG_LEVEL", default_value = "info")]
     #[serde(default = "default_log_level")]
     pub log_level: String,
 
     /// Gateway gRPC server port.
-    #[arg(long, env = "DEFGUARD_GRPC_PORT", default_value = "50066")]
+    #[arg(long, env = "XGUARD_GRPC_PORT", default_value = "50066")]
     #[serde(default = "default_grpc_port")]
     pub(crate) grpc_port: u16,
 
     /// Use userspace WireGuard implementation e.g. wireguard-go
-    #[arg(long, short = 'u', env = "DEFGUARD_USERSPACE")]
+    #[arg(long, short = 'u', env = "XGUARD_USERSPACE")]
     #[serde(default)]
     pub userspace: bool,
 
-    /// Defines how often (in seconds) interface statistics are sent to Defguard Core.
-    #[arg(long, short = 'p', env = "DEFGUARD_STATS_PERIOD", default_value = "30")]
+    /// Defines how often (in seconds) interface statistics are sent to XGuard Core.
+    #[arg(long, short = 'p', env = "XGUARD_STATS_PERIOD", default_value = "30")]
     #[serde(default = "default_stats_period")]
     pub stats_period: u64,
 
-    /// Seconds to wait after losing the Defguard Core connection before tearing down
+    /// Seconds to wait after losing the XGuard Core connection before tearing down
     /// the WireGuard interface. Bridges transient Core outages (e.g. a container
     /// restart) without dropping VPN traffic; if Core reconnects within the window,
     /// the teardown is skipped. Set to 0 to tear down immediately. NOTE: during the
@@ -90,16 +90,16 @@ pub struct Config {
     /// sessions retain access until it elapses.
     #[arg(
         long,
-        env = "DEFGUARD_CORE_DISCONNECT_GRACE_PERIOD",
+        env = "XGUARD_CORE_DISCONNECT_GRACE_PERIOD",
         default_value = "30"
     )]
     #[serde(default = "default_core_disconnect_grace_period")]
     pub core_disconnect_grace_period: u64,
 
-    /// Seconds between HTTP/2 keepalive pings to Defguard Core.
+    /// Seconds between HTTP/2 keepalive pings to XGuard Core.
     #[arg(
         long,
-        env = "DEFGUARD_GRPC_KEEPALIVE_INTERVAL",
+        env = "XGUARD_GRPC_KEEPALIVE_INTERVAL",
         default_value_t = DEFAULT_GRPC_KEEPALIVE_INTERVAL_SECS
     )]
     #[serde(default = "default_grpc_keepalive_interval")]
@@ -108,14 +108,14 @@ pub struct Config {
     /// Seconds to wait for an HTTP/2 keepalive response before closing the connection.
     #[arg(
         long,
-        env = "DEFGUARD_GRPC_KEEPALIVE_TIMEOUT",
+        env = "XGUARD_GRPC_KEEPALIVE_TIMEOUT",
         default_value_t = DEFAULT_GRPC_KEEPALIVE_TIMEOUT_SECS
     )]
     #[serde(default = "default_grpc_keepalive_timeout")]
     pub grpc_keepalive_timeout: NonZeroU64,
 
     /// Network interface name (e.g. wg0)
-    #[arg(long, short = 'i', env = "DEFGUARD_IFNAME", default_value = "wg0")]
+    #[arg(long, short = 'i', env = "XGUARD_IFNAME", default_value = "wg0")]
     #[serde(default = "default_ifname")]
     pub ifname: String,
 
@@ -165,27 +165,27 @@ pub struct Config {
     pub health_port: Option<u16>,
 
     /// Whether the firewall should automatically apply masquerading
-    #[arg(long, env = "DEFGUARD_MASQUERADE")]
+    #[arg(long, env = "XGUARD_MASQUERADE")]
     #[serde(default)]
     pub masquerade: bool,
 
-    #[arg(long, env = "DEFGUARD_FW_PRIORITY")]
+    #[arg(long, env = "XGUARD_FW_PRIORITY")]
     #[serde(default)]
     pub fw_priority: Option<i32>,
 
     /// Whether all firewall management should be disabled
     /// Meant to be used as a workaround for incompatible hardware
-    #[arg(long, env = "DEFGUARD_DISABLE_FW_MGMT")]
+    #[arg(long, env = "XGUARD_DISABLE_FW_MGMT")]
     #[serde(default)]
     pub disable_firewall_management: bool,
 
-    #[arg(long, env = "DEFGUARD_HTTP_BIND_ADDRESS")]
+    #[arg(long, env = "XGUARD_HTTP_BIND_ADDRESS")]
     pub http_bind_address: Option<IpAddr>,
 
     #[arg(
         long,
-        env = "DEFGUARD_GATEWAY_CERT_DIR",
-        default_value = "/etc/defguard/certs"
+        env = "XGUARD_GATEWAY_CERT_DIR",
+        default_value = "/etc/xguard/certs"
     )]
     #[serde(default = "default_cert_dir")]
     pub cert_dir: PathBuf,
@@ -195,14 +195,14 @@ pub struct Config {
     #[arg(
         long,
         short = 't',
-        env = "DEFGUARD_ADOPTION_TIMEOUT",
+        env = "XGUARD_ADOPTION_TIMEOUT",
         default_value = "10"
     )]
     #[serde(default = "default_adoption_timeout")]
     pub adoption_timeout: u64,
 
     /// On quit, clean the network interface and VPN configurations.
-    #[arg(long, env = "DEFGUARD_CLEAN_ON_QUIT")]
+    #[arg(long, env = "XGUARD_CLEAN_ON_QUIT")]
     #[serde(default)]
     pub clean_on_quit: bool,
 }
@@ -260,7 +260,7 @@ impl Default for Config {
             fw_priority: None,
             disable_firewall_management: false,
             http_bind_address: None,
-            cert_dir: PathBuf::from("/etc/defguard/certs"),
+            cert_dir: PathBuf::from("/etc/xguard/certs"),
             adoption_timeout: 5,
             clean_on_quit: false,
         }
@@ -305,7 +305,7 @@ fn verify_cli() {
 fn test_validate_ifname() {
     assert!(validate_ifname("w").is_ok());
     assert!(validate_ifname("wg0").is_ok());
-    assert!(validate_ifname("wg-defguard").is_ok());
+    assert!(validate_ifname("wg-xguard").is_ok());
     assert!(validate_ifname("wg-14-chars-ok").is_ok());
     assert!(validate_ifname("wg-15-chars-ok_").is_ok());
     assert!(validate_ifname("wg-16-chars-bad_").is_err());
@@ -327,7 +327,7 @@ fn grpc_keepalive_settings_accept_cli_and_toml_values() {
         .unwrap();
     assert_eq!(
         interval.get_env().unwrap().to_str(),
-        Some("DEFGUARD_GRPC_KEEPALIVE_INTERVAL")
+        Some("XGUARD_GRPC_KEEPALIVE_INTERVAL")
     );
     let timeout = command
         .get_arguments()
@@ -335,11 +335,11 @@ fn grpc_keepalive_settings_accept_cli_and_toml_values() {
         .unwrap();
     assert_eq!(
         timeout.get_env().unwrap().to_str(),
-        Some("DEFGUARD_GRPC_KEEPALIVE_TIMEOUT")
+        Some("XGUARD_GRPC_KEEPALIVE_TIMEOUT")
     );
 
     let cli = Config::try_parse_from([
-        "defguard-gateway",
+        "xguard-gateway",
         "--grpc-keepalive-interval",
         "15",
         "--grpc-keepalive-timeout",
@@ -349,9 +349,9 @@ fn grpc_keepalive_settings_accept_cli_and_toml_values() {
     assert_eq!(cli.grpc_keepalive_interval.get(), 15);
     assert_eq!(cli.grpc_keepalive_timeout.get(), 25);
     assert!(
-        Config::try_parse_from(["defguard-gateway", "--grpc-keepalive-interval", "0"]).is_err()
+        Config::try_parse_from(["xguard-gateway", "--grpc-keepalive-interval", "0"]).is_err()
     );
-    assert!(Config::try_parse_from(["defguard-gateway", "--grpc-keepalive-timeout", "0"]).is_err());
+    assert!(Config::try_parse_from(["xguard-gateway", "--grpc-keepalive-timeout", "0"]).is_err());
 
     let file: Config =
         toml::from_str("grpc_keepalive_interval = 12\ngrpc_keepalive_timeout = 24").unwrap();

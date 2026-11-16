@@ -11,7 +11,7 @@ use std::{
     time::{Duration, SystemTime},
 };
 
-use defguard_wireguard_rs::{WireguardInterfaceApi, net::IpAddrMask};
+use xguard_wireguard_rs::{WireguardInterfaceApi, net::IpAddrMask};
 use tokio::{
     sync::{mpsc, oneshot, watch},
     task::JoinSet,
@@ -308,36 +308,36 @@ impl Gateway {
 
     /// Checks whether the firewall rules have changed.
     fn have_firewall_rules_changed(&self, new_rules: &[FirewallRule]) -> bool {
-        debug!("Checking if Defguard ACL rules have changed");
+        debug!("Checking if XGuard ACL rules have changed");
         if let Some(current_config) = &self.firewall_config {
             let current_rules = &current_config.rules;
             if current_rules.len() != new_rules.len() {
-                debug!("Number of Defguard ACL rules is different, so the rules have changed");
+                debug!("Number of XGuard ACL rules is different, so the rules have changed");
                 return true;
             }
 
             for rule in new_rules {
                 if !current_rules.contains(rule) {
-                    debug!("Found a new Defguard ACL rule: {rule:?}. Rules have changed.");
+                    debug!("Found a new XGuard ACL rule: {rule:?}. Rules have changed.");
                     return true;
                 }
             }
 
             for rule in current_rules {
                 if !new_rules.contains(rule) {
-                    debug!("Found a removed Defguard ACL rule: {rule:?}. Rules have changed.");
+                    debug!("Found a removed XGuard ACL rule: {rule:?}. Rules have changed.");
                     return true;
                 }
             }
 
             debug!(
-                "Defguard ACL rules are the same. Rules have not changed. My rules: \
+                "XGuard ACL rules are the same. Rules have not changed. My rules: \
                 {current_rules:?}, new rules: {new_rules:?}"
             );
             false
         } else {
             debug!(
-                "There are new Defguard ACL rules in the new configuration, but we don't have \
+                "There are new XGuard ACL rules in the new configuration, but we don't have \
                 any in the current one. Rules have changed."
             );
             true
@@ -463,7 +463,7 @@ impl Gateway {
                 "Received configuration is different than the current one. Reconfiguring interface."
             );
             let config =
-                defguard_wireguard_rs::InterfaceConfiguration::from(new_configuration.clone());
+                xguard_wireguard_rs::InterfaceConfiguration::from(new_configuration.clone());
 
             self.wgapi.lock().unwrap().configure_interface(&config)?;
             info!(

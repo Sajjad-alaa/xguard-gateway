@@ -3,7 +3,7 @@ use std::{
     sync::atomic::{AtomicBool, Ordering},
 };
 
-use defguard_wireguard_rs::{
+use xguard_wireguard_rs::{
     InterfaceConfiguration, WireguardInterfaceApi, dns::DnsConfig, error::WireguardInterfaceError,
     host::Host, key::Key, net::IpAddrMask, peer::Peer as WgPeer,
 };

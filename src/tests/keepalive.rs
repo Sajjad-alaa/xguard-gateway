@@ -3,7 +3,7 @@ use std::{
     time::Duration,
 };
 
-use defguard_version::{SYSTEM_INFO_HEADER, VERSION_HEADER};
+use xguard_version::{SYSTEM_INFO_HEADER, VERSION_HEADER};
 use tokio::{
     io::{copy, copy_bidirectional, sink},
     net::{TcpListener, TcpStream},

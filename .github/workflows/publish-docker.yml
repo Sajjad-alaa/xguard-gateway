@@ -10,7 +10,7 @@ jobs:
     timeout-minutes: 15
 
     env:
-      GHCR_REPO: ghcr.io/defguard/gateway
+      GHCR_REPO: ghcr.io/sajjad-alaa/xguard-gateway
 
     permissions:
       contents: read
@@ -42,11 +42,11 @@ jobs:
         run: |
           set -euo pipefail
           VERSION=${TAG#v}
-          IMAGE=$(gh release download "$TAG" --pattern "defguard-gateway-$VERSION-docker-image.txt" --output -)
+          IMAGE=$(gh release download "$TAG" --pattern "xguard-gateway-$VERSION-docker-image.txt" --output -)
           # Release assets are editable, so the file counts only when it names a digest in GHCR_REPO.
           DIGEST=${IMAGE#"$GHCR_REPO@"}
           if [[ ! $DIGEST =~ ^sha256:[0-9a-f]{64}$ ]]; then
-            echo "::error::defguard-gateway-$VERSION-docker-image.txt must hold $GHCR_REPO@sha256:<digest>, not '$IMAGE'"
+            echo "::error::xguard-gateway-$VERSION-docker-image.txt must hold $GHCR_REPO@sha256:<digest>, not '$IMAGE'"
             exit 1
           fi
 
@@ -68,5 +68,5 @@ jobs:
           cosign sign --yes "${IMAGES[@]}"
           cosign verify "${IMAGES[@]}" \
             --certificate-oidc-issuer https://token.actions.githubusercontent.com \
-            --certificate-identity-regexp="https://github.com/DefGuard/gateway" \
+            --certificate-identity-regexp="https://github.com/Sajjad-alaa/xguard-gateway" \
             -o text

@@ -1,14 +1,14 @@
-# This is an example config file for Defguard Gateway.
+# This is an example config file for XGuard Gateway.
 # To use it fill in actual values for your deployment below.
 
 # Required: use userspace WireGuard implementation (e.g. wireguard-go)
 userspace = false
-# Required: how often should interface stat updates be sent to Defguard Core (in seconds)
+# Required: how often should interface stat updates be sent to XGuard Core (in seconds)
 stats_period = 60
 # Required: name of WireGuard interface
 ifname = "wg0"
 # Optional: write PID to this file
-# pidfile = defguard-gateway.pid
+# pidfile = xguard-gateway.pid
 # Required: enable logging to syslog
 use_syslog = false
 # Required: which syslog facility to use
@@ -46,7 +46,7 @@ syslog_socket = "/var/run/log"
 # Optional: Enable automatic masquerading of traffic by the firewall
 #masquerade = true
 
-# Optional: Set the priority of the Defguard forward chain
+# Optional: Set the priority of the XGuard forward chain
 #fw_priority = 0
 
 # Optional: Clean the network interface and VPN configuration on quit.

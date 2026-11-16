@@ -18,7 +18,7 @@ mod rule;
 
 use std::os::fd::{AsRawFd, RawFd};
 
-use defguard_wireguard_rs::bsd::c_int_to_error;
+use xguard_wireguard_rs::bsd::c_int_to_error;
 use libc::ioctl;
 
 use self::{
@@ -28,7 +28,7 @@ use self::{
 use super::{FirewallError, FirewallRule, api::FirewallApi};
 use crate::enterprise::firewall::Port;
 
-const ANCHOR_PREFIX: &str = "defguard/";
+const ANCHOR_PREFIX: &str = "xguard/";
 
 impl FirewallApi {
     /// Construct anchor name based on prefix and network interface name.

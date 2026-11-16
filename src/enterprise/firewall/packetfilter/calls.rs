@@ -7,7 +7,7 @@ use std::{
     ptr,
 };
 
-use defguard_wireguard_rs::bsd::ioctl::iowr;
+use xguard_wireguard_rs::bsd::ioctl::iowr;
 use ipnetwork::IpNetwork;
 use libc::{IFNAMSIZ, c_ulong, pid_t, uid_t};
 

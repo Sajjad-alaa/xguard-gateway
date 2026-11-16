@@ -1,151 +1,151 @@
 <form>
   <field>
-    <id>defguardgateway.general.Enabled</id>
-    <label>Enable Defguard Gateway</label>
+    <id>xguardgateway.general.Enabled</id>
+    <label>Enable XGuard Gateway</label>
     <type>checkbox</type>
-    <help>Check to enable Defguard Gateway service.</help>
+    <help>Check to enable XGuard Gateway service.</help>
   </field>
   <field>
-    <id>defguardgateway.general.LogLevel</id>
+    <id>xguardgateway.general.LogLevel</id>
     <label>Log level</label>
     <type>text</type>
     <help>Set the application log level used when syslog is disabled.</help>
     <hint>Default value: info</hint>
   </field>
   <field>
-    <id>defguardgateway.general.Name</id>
+    <id>xguardgateway.general.Name</id>
     <label>Gateway name</label>
     <type>text</type>
-    <help>Name that will be displayed in Defguard.</help>
+    <help>Name that will be displayed in XGuard.</help>
     <hint>Gateway OPNsense</hint>
   </field>
   <field>
-    <id>defguardgateway.general.GrpcPort</id>
+    <id>xguardgateway.general.GrpcPort</id>
     <label>Gateway gRPC port</label>
     <type>text</type>
     <help>Port used by the gateway gRPC server.</help>
     <hint>Default value: 50066</hint>
   </field>
   <field>
-    <id>defguardgateway.general.UseSyslog</id>
+    <id>xguardgateway.general.UseSyslog</id>
     <label>Use syslog</label>
     <type>checkbox</type>
     <help>Enable logging to syslog.</help>
   </field>
   <field>
-    <id>defguardgateway.general.PidFile</id>
+    <id>xguardgateway.general.PidFile</id>
     <label>PID file</label>
     <type>text</type>
     <help>Optional: write PID to this file.</help>
-    <hint>Default value: /var/run/defguard_gateway.pid</hint>
+    <hint>Default value: /var/run/xguard_gateway.pid</hint>
   </field>
   <field>
-    <id>defguardgateway.general.SyslogSocket</id>
+    <id>xguardgateway.general.SyslogSocket</id>
     <label>Syslog socket</label>
     <type>text</type>
     <help>Specify the syslog socket.</help>
     <hint>Default value: /var/run/log</hint>
   </field>
   <field>
-    <id>defguardgateway.general.SyslogFacility</id>
+    <id>xguardgateway.general.SyslogFacility</id>
     <label>Syslog facility</label>
     <type>text</type>
     <hint>Default value: LOG_USER</hint>
     <help>Specify the syslog facility.</help>
   </field>
   <field>
-    <id>defguardgateway.general.IfName</id>
+    <id>xguardgateway.general.IfName</id>
     <label>Network interface</label>
     <type>text</type>
     <help>Specify the WireGuard interface name. It must start with wg.</help>
     <hint>Default value: wg0</hint>
   </field>
   <field>
-    <id>defguardgateway.general.StatsPeriod</id>
+    <id>xguardgateway.general.StatsPeriod</id>
     <label>Stats gathering period</label>
     <type>text</type>
     <help>Specify how often interface statistics are sent, in seconds.</help>
     <hint>Default value: 30</hint>
   </field>
   <field>
-    <id>defguardgateway.general.Userspace</id>
+    <id>xguardgateway.general.Userspace</id>
     <label>Use WireGuard userspace implementation</label>
     <type>checkbox</type>
     <help>Use userspace WireGuard implementation; useful on systems without native WireGuard support.</help>
   </field>
   <field>
-    <id>defguardgateway.general.PreUp</id>
+    <id>xguardgateway.general.PreUp</id>
     <label>Pre up</label>
     <type>text</type>
     <help>Command to run before bringing up the interface.</help>
   </field>
   <field>
-    <id>defguardgateway.general.PreDown</id>
+    <id>xguardgateway.general.PreDown</id>
     <label>Pre down</label>
     <type>text</type>
     <help>Command to run before bringing down the interface.</help>
   </field>
   <field>
-    <id>defguardgateway.general.PostUp</id>
+    <id>xguardgateway.general.PostUp</id>
     <label>Post up</label>
     <type>text</type>
     <help>Command to run after bringing up the interface.</help>
   </field>
   <field>
-    <id>defguardgateway.general.PostDown</id>
+    <id>xguardgateway.general.PostDown</id>
     <label>Post down</label>
     <type>text</type>
     <help>Command to run after bringing down the interface.</help>
   </field>
   <field>
-    <id>defguardgateway.general.HealthPort</id>
+    <id>xguardgateway.general.HealthPort</id>
     <label>Health port</label>
     <type>text</type>
     <help>Optional HTTP port exposing the gateway health endpoint.</help>
   </field>
   <field>
-    <id>defguardgateway.general.Masquerade</id>
+    <id>xguardgateway.general.Masquerade</id>
     <label>Enable masquerade</label>
     <type>checkbox</type>
     <help>Automatically apply outbound masquerading rules in the firewall.</help>
   </field>
   <field>
-    <id>defguardgateway.general.FwPriority</id>
+    <id>xguardgateway.general.FwPriority</id>
     <label>Firewall priority</label>
     <type>text</type>
-    <help>Optional priority for the Defguard forward chain.</help>
+    <help>Optional priority for the XGuard forward chain.</help>
   </field>
   <field>
-    <id>defguardgateway.general.DisableFirewallManagement</id>
+    <id>xguardgateway.general.DisableFirewallManagement</id>
     <label>Disable firewall management</label>
     <type>checkbox</type>
-    <help>Disable Defguard-managed firewall changes for incompatible hardware or custom setups.</help>
+    <help>Disable XGuard-managed firewall changes for incompatible hardware or custom setups.</help>
   </field>
   <field>
-    <id>defguardgateway.general.HttpBindAddress</id>
+    <id>xguardgateway.general.HttpBindAddress</id>
     <label>HTTP bind address</label>
     <type>text</type>
     <help>Optional IPv4 or IPv6 address used by the health endpoint.</help>
   </field>
   <field>
-    <id>defguardgateway.general.CertDir</id>
+    <id>xguardgateway.general.CertDir</id>
     <label>Certificate directory</label>
     <type>text</type>
     <help>Directory where the gateway stores generated gRPC certificates.</help>
-    <hint>Default value: /etc/defguard/certs</hint>
+    <hint>Default value: /etc/xguard/certs</hint>
   </field>
   <field>
-    <id>defguardgateway.general.FwAnchorPlacement</id>
+    <id>xguardgateway.general.FwAnchorPlacement</id>
     <label>Firewall anchor placement</label>
     <type>dropdown</type>
-    <help>Where in the pf ruleset the Defguard anchor is inserted. Tail (default) evaluates OPNsense rules first; Head places Defguard rules before OPNsense rules.</help>
+    <help>Where in the pf ruleset the XGuard anchor is inserted. Tail (default) evaluates OPNsense rules first; Head places XGuard rules before OPNsense rules.</help>
     <advanced>true</advanced>
   </field>
   <field>
-    <id>defguardgateway.general.FwAnchorQuick</id>
+    <id>xguardgateway.general.FwAnchorQuick</id>
     <label>Quick anchor (dangerous)</label>
     <type>checkbox</type>
-    <help>Make the Defguard anchor 'quick'. WARNING: on OPNsense 26.7+ (FreeBSD 15.1+) this short-circuits the parent ruleset even when no inner rule matches, silently bypassing OPNsense's own firewall rules. Leave disabled unless you fully understand the risk.</help>
+    <help>Make the XGuard anchor 'quick'. WARNING: on OPNsense 26.7+ (FreeBSD 15.1+) this short-circuits the parent ruleset even when no inner rule matches, silently bypassing OPNsense's own firewall rules. Leave disabled unless you fully understand the risk.</help>
     <advanced>true</advanced>
   </field>
 </form>

@@ -1,6 +1,6 @@
 use std::os::fd::AsRawFd;
 
-use defguard_wireguard_rs::bsd::c_int_to_error;
+use xguard_wireguard_rs::bsd::c_int_to_error;
 use libc::ioctl;
 
 use super::{

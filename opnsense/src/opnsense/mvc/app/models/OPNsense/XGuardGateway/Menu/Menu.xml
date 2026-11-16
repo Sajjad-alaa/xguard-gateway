@@ -1,0 +1,5 @@
+<menu>
+    <VPN>
+        <XGuardGateway VisibleName="XGuard Gateway" cssClass="fa fa-lock fa-fw" url="/ui/xguardgateway/" />
+    </VPN>
+</menu>
