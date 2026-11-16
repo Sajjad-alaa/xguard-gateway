@@ -40,7 +40,6 @@ fn test_purge_then_configure_recovers_interface() {
         port: 51820,
         peers: vec![],
         addresses: vec!["10.0.0.1/24".into()],
-        firewall_config: None,
         mtu: 1420,
         fwmark: 0,
     };

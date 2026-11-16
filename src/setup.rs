@@ -7,7 +7,6 @@ use std::{
     time::{Duration, SystemTime, UNIX_EPOCH},
 };
 
-use xguard_version::{Version, server::XGuardVersionLayer};
 use rustls_pki_types::{CertificateDer, UnixTime};
 use tokio::{
     fs::OpenOptions,
@@ -19,6 +18,7 @@ use tonic::{Request, Response, Status, transport::Server};
 use tower::ServiceBuilder;
 use tracing::instrument;
 use webpki::{KeyUsage, anchor_from_trusted_cert};
+use xguard_version::{Version, server::XGuardVersionLayer};
 
 use crate::{
     CORE_CLIENT_CERT_NAME, GRPC_CA_CERT_NAME, GRPC_CERT_NAME, GRPC_KEY_NAME, VERSION,

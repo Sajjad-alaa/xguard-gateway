@@ -1,9 +1,9 @@
 use std::{collections::HashMap, fmt};
 
-use xguard_version::Version;
 use tokio::sync::mpsc::Sender;
 use tracing::{Event, Subscriber};
 use tracing_subscriber::{Layer, layer::SubscriberExt, util::SubscriberInitExt};
+use xguard_version::Version;
 
 use crate::proto::common::LogEntry;
 

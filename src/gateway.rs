@@ -11,7 +11,6 @@ use std::{
     time::{Duration, SystemTime},
 };
 
-use xguard_wireguard_rs::{WireguardInterfaceApi, net::IpAddrMask};
 use tokio::{
     sync::{mpsc, oneshot, watch},
     task::JoinSet,
@@ -19,13 +18,10 @@ use tokio::{
 };
 use tonic::Status;
 use tracing::instrument;
+use xguard_wireguard_rs::{WireguardInterfaceApi, net::IpAddrMask};
 
 use crate::{
     config::Config,
-    enterprise::firewall::{
-        FirewallConfig, FirewallError, FirewallRule, SnatBinding,
-        api::{FirewallApi, FirewallManagementApi},
-    },
     error::GatewayError,
     gateway_server::GatewayServer,
     proto::{
@@ -196,7 +192,6 @@ pub struct Gateway {
     interface_configuration: Option<InterfaceConfiguration>,
     peers: HashMap<PubKey, Peer>,
     pub(crate) wgapi: Arc<Mutex<dyn WireguardInterfaceApi + Send + Sync + 'static>>,
-    firewall_config: Option<FirewallConfig>,
     pub connected: Arc<AtomicBool>,
     // Transmission channel. Important: allows only one connected client.
     pub(crate) client_tx: Option<mpsc::UnboundedSender<Result<CoreRequest, Status>>>,
@@ -208,12 +203,17 @@ impl Gateway {
         config: Config,
         wgapi: impl WireguardInterfaceApi + Send + Sync + 'static,
     ) -> Result<Self, GatewayError> {
+        if config.masquerade {
+            warn!(
+                "masquerade is enabled, but XGuard gateways do not manage NAT rules yet. \
+                Configure masquerading on the host (nftables/iptables) for this interface."
+            );
+        }
         Ok(Self {
             config,
             interface_configuration: None,
             peers: HashMap::new(),
             wgapi: Arc::new(Mutex::new(wgapi)),
-            firewall_config: None,
             connected: Arc::new(AtomicBool::new(false)),
             client_tx: None,
             tls_config: None,
@@ -230,10 +230,6 @@ impl Gateway {
             .remove_interface()
         {
             error!("Gateway purge failed to drop the interface: {err}");
-        }
-        // Cleanup the firewall.
-        if let Err(err) = self.cleanup_firewall() {
-            error!("Gateway purge failed to cleanup firewall rules: {err}");
         }
         // Reset connection state.
         self.interface_configuration = None;
@@ -295,138 +291,6 @@ impl Gateway {
         })
     }
 
-    /// Checks whether the firewall config have changed.
-    fn has_firewall_config_changed(&self, new_fw_config: &FirewallConfig) -> bool {
-        if let Some(current_config) = &self.firewall_config {
-            return current_config.default_policy != new_fw_config.default_policy
-                || self.have_firewall_rules_changed(&new_fw_config.rules)
-                || self.have_snat_bindings_changed(&new_fw_config.snat_bindings);
-        }
-
-        true
-    }
-
-    /// Checks whether the firewall rules have changed.
-    fn have_firewall_rules_changed(&self, new_rules: &[FirewallRule]) -> bool {
-        debug!("Checking if XGuard ACL rules have changed");
-        if let Some(current_config) = &self.firewall_config {
-            let current_rules = &current_config.rules;
-            if current_rules.len() != new_rules.len() {
-                debug!("Number of XGuard ACL rules is different, so the rules have changed");
-                return true;
-            }
-
-            for rule in new_rules {
-                if !current_rules.contains(rule) {
-                    debug!("Found a new XGuard ACL rule: {rule:?}. Rules have changed.");
-                    return true;
-                }
-            }
-
-            for rule in current_rules {
-                if !new_rules.contains(rule) {
-                    debug!("Found a removed XGuard ACL rule: {rule:?}. Rules have changed.");
-                    return true;
-                }
-            }
-
-            debug!(
-                "XGuard ACL rules are the same. Rules have not changed. My rules: \
-                {current_rules:?}, new rules: {new_rules:?}"
-            );
-            false
-        } else {
-            debug!(
-                "There are new XGuard ACL rules in the new configuration, but we don't have \
-                any in the current one. Rules have changed."
-            );
-            true
-        }
-    }
-
-    /// Checks whether SNAT bindings have changed.
-    fn have_snat_bindings_changed(&self, new_bindings: &[SnatBinding]) -> bool {
-        debug!("Checking if SNAT bindings have changed");
-        if let Some(current_config) = &self.firewall_config {
-            let current_bindings = &current_config.snat_bindings;
-            if current_bindings.len() != new_bindings.len() {
-                debug!("Number of SNAT bindings is different, so the bindings have changed");
-                return true;
-            }
-
-            for binding in new_bindings {
-                if !current_bindings.contains(binding) {
-                    debug!("Found a new SNAT binding: {binding:?}. Bindings have changed.");
-                    return true;
-                }
-            }
-
-            for binding in current_bindings {
-                if !new_bindings.contains(binding) {
-                    debug!("Found a removed SNAT binding: {binding:?}. Bindings have changed.");
-                    return true;
-                }
-            }
-
-            debug!(
-                "SNAT bindings are the same. Bindings have not changed. My bindings: \
-                {current_bindings:?}, new bindings: {new_bindings:?}"
-            );
-            false
-        } else {
-            debug!(
-                "There are new SNAT bindings in the new configuration, but we don't have any in \
-                the current one. Bindings have changed."
-            );
-            true
-        }
-    }
-
-    /// Process and apply firewall configuration changes.
-    /// - If the main config changed (default policy), reconfigure the whole firewall.
-    /// - If only the rules changed, apply the new rules. Currently also reconfigures the whole
-    ///   firewall but that should be temporary.
-    fn process_firewall_changes(
-        &mut self,
-        fw_config: Option<&FirewallConfig>,
-    ) -> Result<(), GatewayError> {
-        if let Some(fw_config) = fw_config {
-            debug!("Received firewall configuration: {fw_config:?}");
-            if self.has_firewall_config_changed(fw_config) {
-                debug!(
-                    "Received firewall configuration is different than current one. \
-                    Reconfiguring firewall..."
-                );
-                let mut firewall_api = FirewallApi::new(&self.config.ifname)?;
-                firewall_api.setup(fw_config.default_policy, self.config.fw_priority)?;
-                firewall_api.setup_nat(self.config.masquerade, &fw_config.snat_bindings)?;
-                firewall_api.add_rules(&fw_config.rules)?;
-                self.firewall_config = Some(fw_config.clone());
-                info!("Reconfigured firewall with new configuration");
-            } else {
-                debug!(
-                    "Received firewall configuration is the same as current one. Skipping \
-                    reconfiguration."
-                );
-            }
-        } else {
-            debug!("Received firewall configuration is empty, cleaning up firewall rules...");
-            self.cleanup_firewall()?;
-            debug!("Cleaned up firewall rules");
-        }
-
-        Ok(())
-    }
-
-    fn cleanup_firewall(&mut self) -> Result<(), FirewallError> {
-        let mut firewall_api = FirewallApi::new(&self.config.ifname)?;
-        firewall_api.cleanup()?;
-        firewall_api.setup_nat(self.config.masquerade, &[])?;
-        self.firewall_config = None;
-
-        Ok(())
-    }
-
     /// Performs complete interface reconfiguration based on `configuration` object.
     /// Called when gateway (re)connects to gRPC endpoint and retrieves complete
     /// network and peers data.
@@ -479,20 +343,6 @@ impl Gateway {
                 "Received configuration is identical to the current one. Skipping interface \
                 reconfiguration."
             );
-        }
-
-        // Process received firewall configuration, unless firewall management is disabled.
-        if self.config.disable_firewall_management {
-            debug!("Firewall management is disabled. Skipping updating firewall configuration");
-        } else {
-            let new_firewall_configuration =
-                if let Some(firewall_config) = new_configuration.firewall_config {
-                    Some(FirewallConfig::from_proto(firewall_config)?)
-                } else {
-                    None
-                };
-
-            self.process_firewall_changes(new_firewall_configuration.as_ref())?;
         }
 
         Ok(())
@@ -553,49 +403,9 @@ impl Gateway {
                     }
                 }
             }
-            Some(update::Update::FirewallConfig(config)) => {
-                if self.config.disable_firewall_management {
-                    debug!(
-                        "Received firewall config update, but firewall management is disabled. \
-                        Skipping processing this update: {config:?}"
-                    );
-                    return;
-                }
-
-                debug!("Applying received firewall configuration: {config:?}");
-                let config_str = format!("{config:?}");
-                match FirewallConfig::from_proto(config) {
-                    Ok(new_firewall_config) => {
-                        debug!(
-                            "Parsed the received firewall configuration: {new_firewall_config:?}, \
-                            processing it and applying changes"
-                        );
-                        if let Err(err) = self.process_firewall_changes(Some(&new_firewall_config))
-                        {
-                            error!("Failed to process received firewall configuration: {err}");
-                        }
-                    }
-                    Err(err) => {
-                        error!(
-                            "Failed to parse received firewall configuration: {err}. \
-                            Configuration: {config_str}"
-                        );
-                    }
-                }
-            }
             Some(update::Update::DisableFirewall(())) => {
-                if self.config.disable_firewall_management {
-                    debug!(
-                        "Received firewall disable request, but firewall management is disabled. \
-                        Skipping processing this update"
-                    );
-                    return;
-                }
-
-                debug!("Disabling firewall configuration");
-                if let Err(err) = self.process_firewall_changes(None) {
-                    error!("Failed to disable firewall configuration: {err}");
-                }
+                // XGuard gateways do not manage firewall rules (Defguard enterprise code removed).
+                debug!("Ignoring firewall disable request: firewall management is not supported");
             }
             _ => warn!("Unsupported kind of update: {update:?}"),
         }

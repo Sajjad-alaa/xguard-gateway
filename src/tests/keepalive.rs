@@ -3,7 +3,6 @@ use std::{
     time::Duration,
 };
 
-use xguard_version::{SYSTEM_INFO_HEADER, VERSION_HEADER};
 use tokio::{
     io::{copy, copy_bidirectional, sink},
     net::{TcpListener, TcpStream},
@@ -12,6 +11,7 @@ use tokio::{
 };
 use tokio_stream::wrappers::UnboundedReceiverStream;
 use tonic::Request;
+use xguard_version::{SYSTEM_INFO_HEADER, VERSION_HEADER};
 
 use super::mtls::{TestCerts, connect, init_crypto, spawn_test_gateway};
 use crate::proto::gateway::CoreResponse;

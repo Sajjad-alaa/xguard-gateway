@@ -1,17 +1,10 @@
-use std::{
-    net::{IpAddr, Ipv4Addr},
-    slice::from_ref,
-};
-
 #[cfg(not(any(target_os = "macos", target_os = "netbsd")))]
 use xguard_wireguard_rs::Kernel;
 #[cfg(any(target_os = "macos", target_os = "netbsd"))]
 use xguard_wireguard_rs::Userspace;
 use xguard_wireguard_rs::WGApi;
-use ipnetwork::IpNetwork;
 
 use super::*;
-use crate::enterprise::firewall::{Address, FirewallRule, Policy, Port, Protocol};
 
 #[cfg(any(target_os = "macos", target_os = "netbsd"))]
 type WG = WGApi<Userspace>;
@@ -56,7 +49,6 @@ async fn test_configuration_comparison() {
         interface_configuration: Some(old_config.clone()),
         peers: old_peers_map,
         wgapi: Arc::new(Mutex::new(wgapi)),
-        firewall_config: None,
         connected: Arc::new(AtomicBool::new(false)),
         client_tx: None,
         tls_config: None,
@@ -173,190 +165,4 @@ async fn test_configuration_comparison() {
     ];
 
     assert!(gateway.is_interface_config_changed(&new_config, &new_peers));
-}
-
-#[tokio::test]
-async fn test_firewall_rules_comparison() {
-    let rule1 = FirewallRule {
-        comment: Some("Rule 1".to_string()),
-        destination_addrs: vec![Address::Network(
-            IpNetwork::new(IpAddr::V4(Ipv4Addr::new(10, 0, 0, 1)), 32).unwrap(),
-        )],
-        destination_ports: vec![Port::Single(80)],
-        id: 1,
-        verdict: Policy::Allow,
-        protocols: vec![Protocol::Tcp],
-        source_addrs: vec![Address::Network(
-            IpNetwork::new(IpAddr::V4(Ipv4Addr::new(192, 168, 1, 1)), 32).unwrap(),
-        )],
-        ipv4: true,
-    };
-
-    let rule2 = FirewallRule {
-        comment: Some("Rule 2".to_string()),
-        destination_addrs: vec![Address::Network(
-            IpNetwork::new(IpAddr::V4(Ipv4Addr::new(10, 0, 0, 2)), 32).unwrap(),
-        )],
-        destination_ports: vec![Port::Single(443)],
-        id: 2,
-        verdict: Policy::Allow,
-        protocols: vec![Protocol::Tcp],
-        source_addrs: vec![Address::Network(
-            IpNetwork::new(IpAddr::V4(Ipv4Addr::new(192, 168, 1, 2)), 32).unwrap(),
-        )],
-        ipv4: true,
-    };
-
-    let rule3 = FirewallRule {
-        comment: Some("Rule 3".to_string()),
-        destination_addrs: vec![Address::Network(
-            IpNetwork::from_str("10.0.1.0/24").unwrap(),
-        )],
-        destination_ports: vec![Port::Range(1000, 2000)],
-        id: 3,
-        verdict: Policy::Deny,
-        protocols: vec![Protocol::Udp],
-        source_addrs: vec![Address::Network(
-            IpNetwork::from_str("192.168.0.0/16").unwrap(),
-        )],
-        ipv4: true,
-    };
-
-    let config1 = FirewallConfig {
-        rules: vec![rule1.clone(), rule2.clone()],
-        default_policy: Policy::Allow,
-        snat_bindings: Vec::new(),
-    };
-
-    let config_empty = FirewallConfig {
-        rules: Vec::new(),
-        default_policy: Policy::Allow,
-        snat_bindings: Vec::new(),
-    };
-
-    let wgapi = WG::new("wg0").unwrap();
-    let config = Config::default();
-    let mut gateway = Gateway {
-        config,
-        interface_configuration: None,
-        peers: HashMap::new(),
-        wgapi: Arc::new(Mutex::new(wgapi)),
-        firewall_config: None,
-        connected: Arc::new(AtomicBool::new(false)),
-        client_tx: None,
-        tls_config: None,
-    };
-
-    // Gateway has no firewall config, new rules are empty
-    gateway.firewall_config = None;
-    assert!(gateway.have_firewall_rules_changed(&[]));
-
-    // Gateway has no firewall config, but new rules exist
-    gateway.firewall_config = None;
-    assert!(gateway.have_firewall_rules_changed(from_ref(&rule1)));
-
-    // Gateway has firewall config, with empty rules list
-    gateway.firewall_config = Some(config1.clone());
-    assert!(gateway.have_firewall_rules_changed(&[]));
-
-    // Gateway has firewall config, new rules have different length
-    gateway.firewall_config = Some(config1.clone());
-    assert!(gateway.have_firewall_rules_changed(from_ref(&rule1)));
-
-    // Gateway has firewall config, new rules have different content
-    gateway.firewall_config = Some(config1.clone());
-    assert!(gateway.have_firewall_rules_changed(&[rule1.clone(), rule3.clone()]));
-
-    // Gateway has firewall config, new rules are identical
-    gateway.firewall_config = Some(config1.clone());
-    assert!(!gateway.have_firewall_rules_changed(&[rule1.clone(), rule2.clone()]));
-
-    // Gateway has empty firewall config, new rules exist
-    gateway.firewall_config = Some(config_empty.clone());
-    assert!(gateway.have_firewall_rules_changed(from_ref(&rule1)));
-
-    // Both configs are empty
-    gateway.firewall_config = Some(config_empty);
-    assert!(!gateway.have_firewall_rules_changed(&[]));
-}
-
-#[tokio::test]
-async fn test_firewall_config_comparison() {
-    let config1 = FirewallConfig {
-        rules: Vec::new(),
-        default_policy: Policy::Allow,
-        snat_bindings: Vec::new(),
-    };
-
-    let config2 = FirewallConfig {
-        rules: Vec::new(),
-        default_policy: Policy::Deny,
-        snat_bindings: Vec::new(),
-    };
-
-    let config3 = FirewallConfig {
-        rules: Vec::new(),
-        default_policy: Policy::Allow,
-        snat_bindings: Vec::new(),
-    };
-
-    let wgapi = WG::new("wg0").unwrap();
-    let config = Config::default();
-    let mut gateway = Gateway {
-        config,
-        interface_configuration: None,
-        peers: HashMap::new(),
-        wgapi: Arc::new(Mutex::new(wgapi)),
-        firewall_config: None,
-        connected: Arc::new(AtomicBool::new(false)),
-        client_tx: None,
-        tls_config: None,
-    };
-    // Gateway has no config
-    gateway.firewall_config = None;
-    assert!(gateway.has_firewall_config_changed(&config1));
-
-    // Gateway has config, new config has different default_policy
-    gateway.firewall_config = Some(config1.clone());
-    assert!(gateway.has_firewall_config_changed(&config2));
-
-    // Gateway has config, new config is identical
-    gateway.firewall_config = Some(config1.clone());
-    assert!(!gateway.has_firewall_config_changed(&config3));
-
-    // Rules are not being ignored
-    let config4 = FirewallConfig {
-        rules: vec![FirewallRule {
-            comment: None,
-            destination_addrs: Vec::new(),
-            destination_ports: Vec::new(),
-            id: 0,
-            verdict: Policy::Allow,
-            protocols: Vec::new(),
-            source_addrs: Vec::new(),
-            ipv4: true,
-        }],
-        default_policy: Policy::Allow,
-        snat_bindings: Vec::new(),
-    };
-    gateway.firewall_config = Some(config1);
-    assert!(gateway.has_firewall_config_changed(&config4));
-
-    // Rule IP versions are not being ignored
-    let config5 = FirewallConfig {
-        rules: vec![FirewallRule {
-            comment: None,
-            destination_addrs: Vec::new(),
-            destination_ports: Vec::new(),
-            id: 0,
-            verdict: Policy::Allow,
-            protocols: Vec::new(),
-            source_addrs: Vec::new(),
-            ipv4: false,
-        }],
-        default_policy: Policy::Allow,
-        snat_bindings: Vec::new(),
-    };
-    gateway.firewall_config = Some(config4);
-    assert!(gateway.has_firewall_config_changed(&config5));
 }

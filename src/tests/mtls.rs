@@ -5,9 +5,6 @@ use std::{
     time::Duration,
 };
 
-use xguard_certs::{
-    CertificateAuthority, Csr, PemLabel, cert_der_to_pem, der_to_pem, generate_key_pair,
-};
 use rustls::crypto::ring;
 use tokio::{
     net::TcpStream,
@@ -19,6 +16,9 @@ use tokio_stream::iter as stream_iter;
 use tonic::{
     Code, Request,
     transport::{Certificate, Channel, ClientTlsConfig, Endpoint, Identity},
+};
+use xguard_certs::{
+    CertificateAuthority, Csr, PemLabel, cert_der_to_pem, der_to_pem, generate_key_pair,
 };
 
 use super::mock_wgapi::NullWgApi;

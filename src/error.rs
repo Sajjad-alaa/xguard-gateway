@@ -1,8 +1,6 @@
-use xguard_version::{XGuardVersionError, SemverError};
-use xguard_wireguard_rs::error::WireguardInterfaceError;
 use thiserror::Error;
-
-use crate::enterprise::firewall::FirewallError;
+use xguard_version::{SemverError, XGuardVersionError};
+use xguard_wireguard_rs::error::WireguardInterfaceError;
 
 #[derive(Debug, Error)]
 pub enum GatewayError {
@@ -26,9 +24,6 @@ pub enum GatewayError {
 
     #[error(transparent)]
     IoError(#[from] std::io::Error),
-
-    #[error("Firewall error: {0}")]
-    FirewallError(#[from] FirewallError),
 
     #[error(transparent)]
     XGuardVersionError(#[from] XGuardVersionError),

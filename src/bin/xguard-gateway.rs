@@ -12,6 +12,10 @@ use tokio::signal;
 #[cfg(unix)]
 use tokio::signal::unix::{SignalKind, signal as unix_signal};
 
+use tokio::{
+    sync::{mpsc, watch},
+    task::JoinSet,
+};
 use xguard_gateway::{
     CORE_CLIENT_CERT_NAME, GRPC_CA_CERT_NAME, GRPC_CERT_NAME, GRPC_KEY_NAME, VERSION,
     config::get_config,
@@ -26,10 +30,6 @@ use xguard_version::Version;
 #[cfg(not(any(target_os = "macos", target_os = "netbsd")))]
 use xguard_wireguard_rs::Kernel;
 use xguard_wireguard_rs::{Userspace, WGApi};
-use tokio::{
-    sync::{mpsc, watch},
-    task::JoinSet,
-};
 
 #[cfg(unix)]
 fn install_shutdown_signal()

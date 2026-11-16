@@ -19,14 +19,6 @@ pub mod generated {
                 tonic::include_proto!("xguard.gateway.v2");
             }
         }
-        pub mod enterprise {
-            pub mod firewall {
-                pub mod v2 {
-
-                    tonic::include_proto!("xguard.enterprise.firewall.v2");
-                }
-            }
-        }
     }
 }
 
@@ -37,11 +29,6 @@ pub mod proto {
     pub mod gateway {
         pub use crate::generated::xguard::gateway::v2::*;
     }
-    pub mod enterprise {
-        pub mod firewall {
-            pub use crate::generated::xguard::enterprise::firewall::v2::*;
-        }
-    }
 }
 
 #[macro_use]
@@ -50,12 +37,11 @@ extern crate log;
 use std::{process::Command, str::FromStr, time::SystemTime};
 
 use config::Config;
-use xguard_wireguard_rs::{InterfaceConfiguration, net::IpAddrMask, peer::Peer};
 use error::GatewayError;
 use prost_types::Timestamp;
 use syslog::{BasicLogger, Facility, Formatter3164};
+use xguard_wireguard_rs::{InterfaceConfiguration, net::IpAddrMask, peer::Peer};
 
-pub mod enterprise;
 pub mod logging;
 pub mod setup;
 

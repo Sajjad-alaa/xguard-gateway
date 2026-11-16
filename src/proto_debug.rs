@@ -17,7 +17,6 @@ impl fmt::Debug for Configuration {
             .field("port", &self.port)
             .field("peers", &self.peers)
             .field("addresses", &self.addresses)
-            .field("firewall_config", &self.firewall_config)
             .field("mtu", &self.mtu)
             .field("fwmark", &self.fwmark)
             .finish()
@@ -52,7 +51,6 @@ impl fmt::Debug for update::Update {
         match self {
             Self::Peer(peer) => f.debug_tuple("Peer").field(peer).finish(),
             Self::Network(config) => f.debug_tuple("Network").field(config).finish(),
-            Self::FirewallConfig(config) => f.debug_tuple("FirewallConfig").field(config).finish(),
             Self::DisableFirewall(empty) => f.debug_tuple("DisableFirewall").field(empty).finish(),
         }
     }

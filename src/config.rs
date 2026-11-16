@@ -348,9 +348,7 @@ fn grpc_keepalive_settings_accept_cli_and_toml_values() {
     .unwrap();
     assert_eq!(cli.grpc_keepalive_interval.get(), 15);
     assert_eq!(cli.grpc_keepalive_timeout.get(), 25);
-    assert!(
-        Config::try_parse_from(["xguard-gateway", "--grpc-keepalive-interval", "0"]).is_err()
-    );
+    assert!(Config::try_parse_from(["xguard-gateway", "--grpc-keepalive-interval", "0"]).is_err());
     assert!(Config::try_parse_from(["xguard-gateway", "--grpc-keepalive-timeout", "0"]).is_err());
 
     let file: Config =

@@ -6,11 +6,6 @@ use std::{
     },
 };
 
-use xguard_certs::{CertificateError, CertificateInfo};
-use xguard_grpc_tls::{certs::server_tls_config, server::certificate_serial_interceptor};
-use xguard_version::{
-    ComponentInfo, XGuardComponent, Version, get_tracing_variables, server::XGuardVersionLayer,
-};
 use tokio::{
     fs::remove_file,
     spawn,
@@ -21,6 +16,11 @@ use tokio_stream::wrappers::UnboundedReceiverStream;
 use tonic::{Request, Response, Status, Streaming, service::InterceptorLayer, transport::Server};
 use tower::ServiceBuilder;
 use tracing::instrument;
+use xguard_certs::{CertificateError, CertificateInfo};
+use xguard_grpc_tls::{certs::server_tls_config, server::certificate_serial_interceptor};
+use xguard_version::{
+    ComponentInfo, Version, XGuardComponent, get_tracing_variables, server::XGuardVersionLayer,
+};
 
 use crate::{
     CORE_CLIENT_CERT_NAME, GRPC_CA_CERT_NAME, GRPC_CERT_NAME, GRPC_KEY_NAME, VERSION,

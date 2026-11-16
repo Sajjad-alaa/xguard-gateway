@@ -16,13 +16,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         // enable optional fields
         .protoc_arg("--experimental_allow_proto3_optional")
         // compiling protos using path on build time
-        .compile_protos(
-            &[
-                "proto/v2/gateway.proto",
-                "proto/enterprise/v2/firewall/firewall.proto",
-            ],
-            &["proto"],
-        )?;
+        .compile_protos(&["proto/v2/gateway.proto"], &["proto"])?;
     println!("cargo:rerun-if-changed=proto");
     Ok(())
 }
