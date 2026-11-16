@@ -23,6 +23,7 @@ use xguard_wireguard_rs::{WireguardInterfaceApi, net::IpAddrMask};
 use crate::{
     config::Config,
     error::GatewayError,
+    firewall::Firewall,
     gateway_server::GatewayServer,
     proto::{
         common::LogEntry,
@@ -196,6 +197,7 @@ pub struct Gateway {
     // Transmission channel. Important: allows only one connected client.
     pub(crate) client_tx: Option<mpsc::UnboundedSender<Result<CoreRequest, Status>>>,
     pub(crate) tls_config: Option<TlsConfig>,
+    firewall: Firewall,
 }
 
 impl Gateway {
@@ -203,14 +205,10 @@ impl Gateway {
         config: Config,
         wgapi: impl WireguardInterfaceApi + Send + Sync + 'static,
     ) -> Result<Self, GatewayError> {
-        if config.masquerade {
-            warn!(
-                "masquerade is enabled, but XGuard gateways do not manage NAT rules yet. \
-                Configure masquerading on the host (nftables/iptables) for this interface."
-            );
-        }
+        let firewall = Firewall::new(config.masquerade, config.fw_priority);
         Ok(Self {
             config,
+            firewall,
             interface_configuration: None,
             peers: HashMap::new(),
             wgapi: Arc::new(Mutex::new(wgapi)),
@@ -345,6 +343,14 @@ impl Gateway {
             );
         }
 
+        // A firewall that fails to apply keeps the previous ruleset; the VPN itself stays up.
+        if let Err(err) = self
+            .firewall
+            .configure(&new_configuration.name, new_configuration.firewall)
+        {
+            error!("Failed to apply the firewall: {err}");
+        }
+
         Ok(())
     }
 
@@ -403,9 +409,15 @@ impl Gateway {
                     }
                 }
             }
+            Some(update::Update::Firewall(policy)) => {
+                if let Err(err) = self.firewall.set_policy(Some(policy)) {
+                    error!("Failed to apply the firewall policy, keeping the previous one: {err}");
+                }
+            }
             Some(update::Update::DisableFirewall(())) => {
-                // XGuard gateways do not manage firewall rules (Defguard enterprise code removed).
-                debug!("Ignoring firewall disable request: firewall management is not supported");
+                if let Err(err) = self.firewall.set_policy(None) {
+                    error!("Failed to turn the firewall off: {err}");
+                }
             }
             _ => warn!("Unsupported kind of update: {update:?}"),
         }

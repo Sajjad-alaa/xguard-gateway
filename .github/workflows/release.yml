@@ -310,6 +310,7 @@ jobs:
             example-config.toml=/etc/xguard/gateway.toml"
           fpm_opts: "--architecture amd64
             --output-type deb
+            --depends nftables
             --version ${{ env.VERSION }}
             --package xguard-gateway-${{ env.VERSION }}-x86_64-unknown-linux-gnu.deb
             --before-install linux/preinst
@@ -326,6 +327,7 @@ jobs:
             example-config.toml=/etc/xguard/gateway.toml"
           fpm_opts: "--architecture arm64
             --output-type deb
+            --depends nftables
             --version ${{ env.VERSION }}
             --package xguard-gateway-${{ env.VERSION }}-aarch64-unknown-linux-gnu.deb
             --before-install linux/preinst
@@ -342,6 +344,7 @@ jobs:
             example-config.toml=/etc/xguard/gateway.toml"
           fpm_opts: "--architecture amd64
             --output-type rpm
+            --depends nftables
             --version ${{ env.VERSION }}
             --package xguard-gateway-${{ env.VERSION }}-x86_64-unknown-linux-gnu.rpm
             --before-install linux/preinst
@@ -358,6 +361,7 @@ jobs:
             example-config.toml=/etc/xguard/gateway.toml"
           fpm_opts: "--architecture arm64
             --output-type rpm
+            --depends nftables
             --version ${{ env.VERSION }}
             --package xguard-gateway-${{ env.VERSION }}-aarch64-unknown-linux-gnu.rpm
             --before-install linux/preinst
@@ -462,7 +466,7 @@ jobs:
       - name: Install build dependencies
         run: |
           apt-get install -y \
-            build-essential pkg-config cmake libssl-dev libmnl-dev libnftnl-dev \
+            build-essential pkg-config cmake libssl-dev \
             protobuf-compiler libprotobuf-dev libudev-dev ruby ruby-dev rubygems rpm
           gem install fpm --no-document
 
@@ -474,6 +478,7 @@ jobs:
         run: |
           fpm \
             --output-type deb \
+            --depends nftables \
             --version "${{ env.VERSION }}" \
             --architecture ${{ matrix.deb_arch }} \
             --package xguard-gateway-${{ env.VERSION }}-${{ matrix.deb_arch }}_ubuntu-22-04-lts.deb \

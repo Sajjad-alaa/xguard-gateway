@@ -43,10 +43,11 @@ syslog_socket = "/var/run/log"
 # 503 - gateway works but is not connected to CORE
 #health_port = 55003
 
-# Optional: Enable automatic masquerading of traffic by the firewall
+# Optional: Masquerade (NAT) traffic from VPN clients leaving through other
+# interfaces. Applied by the gateway with nftables (table `inet xguard`).
 #masquerade = true
 
-# Optional: Set the priority of the XGuard forward chain
+# Optional: Priority of the XGuard firewall's input and forward chains
 #fw_priority = 0
 
 # Optional: Clean the network interface and VPN configuration on quit.

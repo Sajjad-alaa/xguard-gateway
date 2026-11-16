@@ -36,8 +36,7 @@
             protobuf
             sqlx-cli
             rustToolchain
-            libnftnl
-            libmnl
+            nftables
             trivy
           ]
           ++ lib.optionals stdenv.hostPlatform.isLinux [systemd];

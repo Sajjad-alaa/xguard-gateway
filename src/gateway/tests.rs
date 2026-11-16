@@ -52,6 +52,7 @@ async fn test_configuration_comparison() {
         connected: Arc::new(AtomicBool::new(false)),
         client_tx: None,
         tls_config: None,
+        firewall: crate::firewall::Firewall::new(false, None),
     };
 
     // new config is the same

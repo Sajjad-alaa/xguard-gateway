@@ -3103,6 +3103,7 @@ dependencies = [
  "rustls-pki-types",
  "rustls-webpki",
  "serde",
+ "serde_json",
  "syslog",
  "thiserror 2.0.20",
  "tokio",

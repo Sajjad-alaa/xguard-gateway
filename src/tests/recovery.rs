@@ -42,6 +42,7 @@ fn test_purge_then_configure_recovers_interface() {
         addresses: vec!["10.0.0.1/24".into()],
         mtu: 1420,
         fwmark: 0,
+        firewall: None,
     };
 
     let result = gateway.configure(new_config);

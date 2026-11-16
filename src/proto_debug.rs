@@ -19,6 +19,7 @@ impl fmt::Debug for Configuration {
             .field("addresses", &self.addresses)
             .field("mtu", &self.mtu)
             .field("fwmark", &self.fwmark)
+            .field("firewall", &self.firewall.as_ref().map(|p| &p.revision))
             .finish()
     }
 }
@@ -52,6 +53,11 @@ impl fmt::Debug for update::Update {
             Self::Peer(peer) => f.debug_tuple("Peer").field(peer).finish(),
             Self::Network(config) => f.debug_tuple("Network").field(config).finish(),
             Self::DisableFirewall(empty) => f.debug_tuple("DisableFirewall").field(empty).finish(),
+            Self::Firewall(policy) => f
+                .debug_struct("Firewall")
+                .field("revision", &policy.revision)
+                .field("rules", &policy.rules.len())
+                .finish(),
         }
     }
 }

@@ -1,5 +1,6 @@
 pub mod config;
 pub mod error;
+pub mod firewall;
 pub mod gateway;
 mod gateway_server;
 mod proto_debug;
